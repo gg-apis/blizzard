@@ -1,6 +1,6 @@
 {
   "name": "gg-apis/blizzard",
-  "description": "",
+  "description": "A performant, type-safe, well-tested API client for Blizzard games",
   "license": ["MIT"],
   "minimum-stability": "beta",
   "require": {
