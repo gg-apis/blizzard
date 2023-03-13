@@ -46,10 +46,11 @@ abstract class AbstractBlizzardApi {
         $region = $this->getRegion($regionAndLocale);
         $locale = $this->getLocale($regionAndLocale);
 
-        $uri = UriUtils::uriWithLocale(
-            UriUtils::apiUriForRegion($region)->withPath($path),
-            $locale
-        );
+        $uri = $this->apiUriForRegion($region)
+            ->withPath($path)
+            ->withQuery(
+                Query::createFromParams(['locale' => $locale->value])
+            );
 
         $headers = [
             'Authorization' => BearerTokenHeader::fromToken($token->accessToken)->toString(),

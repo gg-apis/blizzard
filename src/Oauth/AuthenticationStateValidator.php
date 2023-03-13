@@ -2,6 +2,9 @@
 
 namespace GGApis\Blizzard\Oauth;
 
+use Cspray\AnnotatedContainer\Attribute\Service;
+
+#[Service]
 interface AuthenticationStateValidator {
 
     public function isStateValid(string $state) : bool;
