@@ -20,7 +20,6 @@ use GGApis\Blizzard\Oauth\ClientAccessToken;
 use GGApis\Blizzard\Oauth\OauthAccessToken;
 use GGApis\Blizzard\Region;
 use GGApis\Blizzard\RegionAndLocale;
-use GGApis\Blizzard\Test\Helper\UriUtils;
 use GGApis\Blizzard\WorldOfWarcraft\BlizzardNamespace;
 use League\Uri\Components\Query;
 use League\Uri\Http;

@@ -4,7 +4,7 @@ namespace GGApis\Blizzard\Oauth;
 
 class User {
     public function __construct(
-        public readonly int $sub,
+        public readonly string $sub,
         public readonly int $id,
         public readonly string $battletag
     ) {}
