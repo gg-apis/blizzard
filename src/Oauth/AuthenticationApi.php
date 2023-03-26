@@ -10,7 +10,10 @@ interface AuthenticationApi {
 
     public function createAuthorizeUri(string $state, array $scopes) : UriInterface;
 
-    public function generateOauthAccessToken(AuthorizationParameters $authorizationParameters) : OauthAccessToken;
+    public function generateOauthAccessToken(
+        AuthorizationParameters $authorizationParameters,
+        AuthenticationStateValidator $stateValidator
+    ) : OauthAccessToken;
 
     public function generateClientAccessToken() : ClientAccessToken;
 
