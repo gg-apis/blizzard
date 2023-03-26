@@ -8,7 +8,7 @@ use Psr\Http\Message\UriInterface;
 #[Service]
 interface AuthenticationApi {
 
-    public function createAuthorizeUri(string $state, array $scopes) : UriInterface;
+    public function createAuthorizeUri(string $state, array $scopes, UriInterface $redirectUri) : UriInterface;
 
     public function generateOauthAccessToken(
         AuthorizationParameters $authorizationParameters,

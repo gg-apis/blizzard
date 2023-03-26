@@ -3,6 +3,8 @@
 namespace GGApis\Blizzard\Oauth;
 
 
+use Psr\Http\Message\UriInterface;
+
 class AuthorizationParameters {
 
     public readonly string $grantType;
@@ -13,7 +15,8 @@ class AuthorizationParameters {
         /**
          * @var list<Scope>
          */
-        public readonly array $scopes
+        public readonly array $scopes,
+        public readonly UriInterface $redirectUri
     ) {
         $this->grantType = 'authorization_code';
     }

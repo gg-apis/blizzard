@@ -17,10 +17,6 @@ final class MockApiConfig implements ApiConfig {
         return 'known-client-secret';
     }
 
-    public function getAuthTokenRedirectUri() : UriInterface {
-        return Http::createFromString('http://localhost/example/redirect');
-    }
-
     public function getDefaultRegion() : Region {
         return Region::NorthAmerica;
     }
