@@ -73,7 +73,6 @@ class AmpAuthenticationApiTest extends TestCase {
             $this->apiConfig,
             new LocalCache(),
             (new MapperBuilder())->mapper(),
-            $this->stateValidator,
         );
     }
 
@@ -96,12 +95,7 @@ class AmpAuthenticationApiTest extends TestCase {
         return MockBlizzardResponseBuilder::fromJsonResponse($request, $statusCode, $body);
     }
 
-    public function testCreateAuthorizeUriWithValidStateReturnsAppropriateUri() : void {
-        $this->stateValidator->expects($this->once())
-            ->method('isStateValid')
-            ->with('known-state')
-            ->willReturn(true);
-
+    public function testCreateAuthorizeUriReturnsAppropriateUri() : void {
         $actual = $this->subject->createAuthorizeUri('known-state', [Scope::OpenId, Scope::WowProfile]);
 
         self::assertSame('https', $actual->getScheme());
@@ -117,18 +111,6 @@ class AmpAuthenticationApiTest extends TestCase {
             ])->toString(),
             $actual->getQuery()
         );
-    }
-
-    public function testCreateAuthorizeUriWithInvalidStateThrowsException() : void {
-        $this->stateValidator->expects($this->once())
-            ->method('isStateValid')
-            ->with('known-state')
-            ->willReturn(false);
-
-        $this->expectException(InvalidAuthenticationState::class);
-        $this->expectExceptionMessage('Provided an invalid state for generating authorization URI.');
-
-        $this->subject->createAuthorizeUri('known-state', [Scope::OpenId, Scope::WowProfile]);
     }
 
     public function testGenerateAccessTokenWithValidCodeAndState() : void {
@@ -151,7 +133,8 @@ class AmpAuthenticationApiTest extends TestCase {
             ->with('known-state');
 
         $accessToken = $this->subject->generateOauthAccessToken(
-            new AuthorizationParameters('known-code', 'known-state', [Scope::OpenId, Scope::WowProfile])
+            new AuthorizationParameters('known-code', 'known-state', [Scope::OpenId, Scope::WowProfile]),
+            $this->stateValidator
         );
 
         self::assertSame('access-token', $accessToken->accessToken);
@@ -180,7 +163,8 @@ class AmpAuthenticationApiTest extends TestCase {
             ->with('known-state');
 
         $accessToken =  $this->subject->generateOauthAccessToken(
-            new AuthorizationParameters('known-code', 'known-state', [Scope::OpenId, Scope::WowProfile])
+            new AuthorizationParameters('known-code', 'known-state', [Scope::OpenId, Scope::WowProfile]),
+            $this->stateValidator
         );
 
         self::assertSame('known-access-token', $accessToken->accessToken);
@@ -207,7 +191,8 @@ TEXT;
         $this->expectExceptionMessage($expected);
 
         $this->subject->generateOauthAccessToken(
-            new AuthorizationParameters('known-code', 'known-state', [Scope::OpenId, Scope::WowProfile])
+            new AuthorizationParameters('known-code', 'known-state', [Scope::OpenId, Scope::WowProfile]),
+            $this->stateValidator
         );
     }
 
@@ -235,7 +220,8 @@ TEXT;
         );
 
         $this->subject->generateOauthAccessToken(
-            new AuthorizationParameters('known-code', 'known-state', [Scope::OpenId, Scope::WowProfile])
+            new AuthorizationParameters('known-code', 'known-state', [Scope::OpenId, Scope::WowProfile]),
+            $this->stateValidator
         );
     }
 
@@ -263,7 +249,8 @@ TEXT;
         );
 
         $this->subject->generateOauthAccessToken(
-            new AuthorizationParameters('known-code', 'known-state', [Scope::OpenId, Scope::WowProfile])
+            new AuthorizationParameters('known-code', 'known-state', [Scope::OpenId, Scope::WowProfile]),
+            $this->stateValidator
         );
     }
 
@@ -294,7 +281,8 @@ TEXT;
         $this->expectException(InvalidContentType::class);
         $this->expectExceptionMessage('Expected Content-Type of "application/json" but received "text/plain".');
         $this->subject->generateOauthAccessToken(
-            new AuthorizationParameters('known-code', 'known-state', [Scope::OpenId, Scope::WowProfile])
+            new AuthorizationParameters('known-code', 'known-state', [Scope::OpenId, Scope::WowProfile]),
+            $this->stateValidator
         );
     }
 
@@ -304,7 +292,7 @@ TEXT;
         $this->httpMock()
             ->onRequest($request)
             ->returnResponse($this->getMockResponse($request, Status::OK, [
-                'sub' => 420,
+                'sub' => '420',
                 'id' => $id = random_int(0, PHP_INT_MAX),
                 'battletag' => $battleTag = bin2hex(random_bytes(4))
             ]));

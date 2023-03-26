@@ -32,17 +32,12 @@ final class AmpAuthenticationApi extends AbstractBlizzardApi implements Authenti
         ApiConfig $apiConfig,
         Cache $cache,
         TreeMapper $mapper,
-        private readonly AuthenticationStateValidator $authenticationStateValidator,
     ) {
         parent::__construct($client, $apiConfig, $cache, $mapper);
         $this->oauthUri = Http::createFromString('https://oauth.battle.net');
     }
 
     public function createAuthorizeUri(string $state, array $scopes) : UriInterface {
-        if (!$this->authenticationStateValidator->isStateValid($state)) {
-            throw InvalidAuthenticationState::fromInvalidStateCreatingAuthorizationUri();
-        }
-
         $scope = implode(' ', array_map(static fn(Scope $scope) => $scope->value, $scopes));
         return $this->oauthUri
             ->withPath('/authorize')
@@ -55,11 +50,11 @@ final class AmpAuthenticationApi extends AbstractBlizzardApi implements Authenti
             ])->toString());
     }
 
-    public function generateOauthAccessToken(AuthorizationParameters $authorizationParameters) : OauthAccessToken {
-        if (!$this->authenticationStateValidator->isStateValid($authorizationParameters->state)) {
+    public function generateOauthAccessToken(AuthorizationParameters $authorizationParameters, AuthenticationStateValidator $stateValidator) : OauthAccessToken {
+        if (!$stateValidator->isStateValid($authorizationParameters->state)) {
             throw InvalidAuthenticationState::fromInvalidStateCreatingAccessToken();
         }
-        $this->authenticationStateValidator->markStateAsUsed($authorizationParameters->state);
+        $stateValidator->markStateAsUsed($authorizationParameters->state);
 
         $request = RequestBuilder::withHeader(
             'Authorization', BasicAuthHeader::fromUserInfo($this->config->getClientId(), $this->config->getClientSecret())->toString()
