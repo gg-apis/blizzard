@@ -32,6 +32,7 @@ use GGApis\Blizzard\Test\Helper\MockApiConfig;
 use GGApis\Blizzard\Test\Helper\MockBlizzardResponseBuilder;
 use GGApis\Blizzard\WorldOfWarcraft\Internal\AbstractBlizzardApi;
 use League\Uri\Components\Query;
+use League\Uri\Http;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -82,7 +83,7 @@ class AmpAuthenticationApiTest extends TestCase {
 
     private function getAccessTokenRequest() : Request {
         return RequestBuilder::withFormBody([
-            'redirect_uri' => (string) $this->apiConfig->getAuthTokenRedirectUri(),
+            'redirect_uri' => 'http://localhost/example/redirect',
             'scope' => 'openid wow.profile',
             'grant_type' => 'authorization_code',
             'code' => 'known-code'
@@ -96,7 +97,11 @@ class AmpAuthenticationApiTest extends TestCase {
     }
 
     public function testCreateAuthorizeUriReturnsAppropriateUri() : void {
-        $actual = $this->subject->createAuthorizeUri('known-state', [Scope::OpenId, Scope::WowProfile]);
+        $actual = $this->subject->createAuthorizeUri(
+            'known-state',
+            [Scope::OpenId, Scope::WowProfile],
+            Http::createFromString('http://localhost/example/redirect')
+        );
 
         self::assertSame('https', $actual->getScheme());
         self::assertSame('oauth.battle.net', $actual->getHost());
@@ -133,7 +138,7 @@ class AmpAuthenticationApiTest extends TestCase {
             ->with('known-state');
 
         $accessToken = $this->subject->generateOauthAccessToken(
-            new AuthorizationParameters('known-code', 'known-state', [Scope::OpenId, Scope::WowProfile]),
+            new AuthorizationParameters('known-code', 'known-state', [Scope::OpenId, Scope::WowProfile], Http::createFromString('http://localhost/example/redirect')),
             $this->stateValidator
         );
 
@@ -163,7 +168,7 @@ class AmpAuthenticationApiTest extends TestCase {
             ->with('known-state');
 
         $accessToken =  $this->subject->generateOauthAccessToken(
-            new AuthorizationParameters('known-code', 'known-state', [Scope::OpenId, Scope::WowProfile]),
+            new AuthorizationParameters('known-code', 'known-state', [Scope::OpenId, Scope::WowProfile], Http::createFromString('http://localhost/example/redirect')),
             $this->stateValidator
         );
 
@@ -191,7 +196,7 @@ TEXT;
         $this->expectExceptionMessage($expected);
 
         $this->subject->generateOauthAccessToken(
-            new AuthorizationParameters('known-code', 'known-state', [Scope::OpenId, Scope::WowProfile]),
+            new AuthorizationParameters('known-code', 'known-state', [Scope::OpenId, Scope::WowProfile], Http::createFromString('http://localhost/example/redirect')),
             $this->stateValidator
         );
     }
@@ -220,7 +225,7 @@ TEXT;
         );
 
         $this->subject->generateOauthAccessToken(
-            new AuthorizationParameters('known-code', 'known-state', [Scope::OpenId, Scope::WowProfile]),
+            new AuthorizationParameters('known-code', 'known-state', [Scope::OpenId, Scope::WowProfile], Http::createFromString('http://localhost/example/redirect')),
             $this->stateValidator
         );
     }
@@ -249,7 +254,7 @@ TEXT;
         );
 
         $this->subject->generateOauthAccessToken(
-            new AuthorizationParameters('known-code', 'known-state', [Scope::OpenId, Scope::WowProfile]),
+            new AuthorizationParameters('known-code', 'known-state', [Scope::OpenId, Scope::WowProfile], Http::createFromString('http://localhost/example/redirect')),
             $this->stateValidator
         );
     }
@@ -281,7 +286,7 @@ TEXT;
         $this->expectException(InvalidContentType::class);
         $this->expectExceptionMessage('Expected Content-Type of "application/json" but received "text/plain".');
         $this->subject->generateOauthAccessToken(
-            new AuthorizationParameters('known-code', 'known-state', [Scope::OpenId, Scope::WowProfile]),
+            new AuthorizationParameters('known-code', 'known-state', [Scope::OpenId, Scope::WowProfile], Http::createFromString('http://localhost/example/redirect')),
             $this->stateValidator
         );
     }

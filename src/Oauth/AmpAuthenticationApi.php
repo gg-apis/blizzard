@@ -37,7 +37,7 @@ final class AmpAuthenticationApi extends AbstractBlizzardApi implements Authenti
         $this->oauthUri = Http::createFromString('https://oauth.battle.net');
     }
 
-    public function createAuthorizeUri(string $state, array $scopes) : UriInterface {
+    public function createAuthorizeUri(string $state, array $scopes, UriInterface $redirectUri) : UriInterface {
         $scope = implode(' ', array_map(static fn(Scope $scope) => $scope->value, $scopes));
         return $this->oauthUri
             ->withPath('/authorize')
@@ -45,7 +45,7 @@ final class AmpAuthenticationApi extends AbstractBlizzardApi implements Authenti
                 'client_id' => $this->config->getClientId(),
                 'scope' => $scope,
                 'state' => $state,
-                'redirect_uri' => (string) $this->config->getAuthTokenRedirectUri(),
+                'redirect_uri' => (string) $redirectUri,
                 'response_type' => 'code'
             ])->toString());
     }
@@ -59,7 +59,7 @@ final class AmpAuthenticationApi extends AbstractBlizzardApi implements Authenti
         $request = RequestBuilder::withHeader(
             'Authorization', BasicAuthHeader::fromUserInfo($this->config->getClientId(), $this->config->getClientSecret())->toString()
         )->withFormBody([
-            'redirect_uri' => (string) $this->config->getAuthTokenRedirectUri(),
+            'redirect_uri' => (string) $authorizationParameters->redirectUri,
             'scope' => implode(' ', array_map(static fn(Scope $scope) => $scope->value, $authorizationParameters->scopes)),
             'grant_type' => $authorizationParameters->grantType,
             'code' => $authorizationParameters->code

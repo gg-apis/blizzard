@@ -16,6 +16,4 @@ interface ApiConfig {
 
     public function getDefaultLocale() : Locale;
 
-    public function getAuthTokenRedirectUri() : UriInterface;
-
 }
