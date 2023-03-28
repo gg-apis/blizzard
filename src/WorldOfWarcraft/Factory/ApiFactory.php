@@ -36,13 +36,12 @@ final class ApiFactory {
     }
 
     #[ServiceDelegate]
-    public function authenticationApi(AuthenticationStateValidator $stateValidator) : AuthenticationApi {
+    public function authenticationApi() : AuthenticationApi {
         return new AmpAuthenticationApi(
             $this->client,
             $this->config,
             $this->cache,
             $this->mapper,
-            $stateValidator
         );
     }
 
