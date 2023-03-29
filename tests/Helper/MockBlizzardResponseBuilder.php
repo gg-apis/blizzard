@@ -4,7 +4,7 @@ namespace GGApis\Blizzard\Test\Helper;
 
 use Amp\Http\Client\Request;
 use Amp\Http\Client\Response;
-use Amp\Http\Status;
+use Amp\Http\HttpStatus;
 
 class MockBlizzardResponseBuilder {
 
@@ -37,7 +37,7 @@ class MockBlizzardResponseBuilder {
     public static function fromNotModifiedResponse(Request $request) : Response {
         return new Response(
             '1.1',
-            Status::NOT_MODIFIED,
+            HttpStatus::NOT_MODIFIED,
             null,
             [],
             null,
@@ -48,7 +48,7 @@ class MockBlizzardResponseBuilder {
     public static function fromNotJsonResponse(Request $request) : Response {
         return new Response(
             '1.1',
-            Status::OK,
+            HttpStatus::OK,
             null,
             ['Content-Type' => 'text/plain'],
             'Something that happened we did not expect that caused the server to respond with plain text.',

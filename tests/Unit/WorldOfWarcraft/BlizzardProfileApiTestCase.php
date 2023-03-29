@@ -6,7 +6,7 @@ use Amp\Cache\Cache;
 use Amp\Cache\LocalCache;
 use Amp\Http\Client\HttpClient;
 use Amp\Http\Client\HttpClientBuilder;
-use Amp\Http\Status;
+use Amp\Http\HttpStatus;
 use Cspray\HttpClientTestInterceptor\HttpMockAwareTestTrait;
 use Cspray\HttpRequestBuilder\RequestBuilder;
 use CuyZ\Valinor\Mapper\TreeMapper;
@@ -78,7 +78,7 @@ abstract class BlizzardProfileApiTestCase extends TestCase {
             ->returnResponse(
                 MockBlizzardResponseBuilder::fromJsonResponse(
                     $request,
-                    Status::OK,
+                    HttpStatus::OK,
                     FixtureUtils::getMockBlizzardResponse($this->getValidResponseFixtureName()),
                     ['Last-Modified' => (new DateTimeImmutable())->format(DateTimeInterface::RFC822)]
                 )
@@ -106,8 +106,8 @@ abstract class BlizzardProfileApiTestCase extends TestCase {
             ->onRequest(
                 $request = $this->request()
             )->returnResponse(
-                MockBlizzardResponseBuilder::fromJsonResponse($request, Status::TOO_MANY_REQUESTS, [
-                    'code' => Status::TOO_MANY_REQUESTS,
+                MockBlizzardResponseBuilder::fromJsonResponse($request, HttpStatus::TOO_MANY_REQUESTS, [
+                    'code' => HttpStatus::TOO_MANY_REQUESTS,
                     'type' => 'BLZWEBAPI00000429',
                     'detail' => 'Too Many Requests'
                 ])
@@ -124,8 +124,8 @@ abstract class BlizzardProfileApiTestCase extends TestCase {
             ->onRequest(
                 $request = $this->request()
             )->returnResponse(
-                MockBlizzardResponseBuilder::fromJsonResponse($request, Status::FORBIDDEN, [
-                    'code' => Status::FORBIDDEN,
+                MockBlizzardResponseBuilder::fromJsonResponse($request, HttpStatus::FORBIDDEN, [
+                    'code' => HttpStatus::FORBIDDEN,
                     'type' => 'BLZWEBAPI00000403',
                     'detail' => 'Forbidden'
                 ])
@@ -143,7 +143,7 @@ abstract class BlizzardProfileApiTestCase extends TestCase {
             ->returnResponse(
                 MockBlizzardResponseBuilder::fromJsonResponse(
                     $request,
-                    Status::OK,
+                    HttpStatus::OK,
                     FixtureUtils::getMockBlizzardResponse($this->getValidResponseFixtureName()),
                     ['Last-Modified' => $lastModified = (new \DateTimeImmutable())->format(\DateTimeInterface::RFC822)]
                 )
@@ -186,7 +186,7 @@ abstract class BlizzardProfileApiTestCase extends TestCase {
             ->returnResponse(
                 MockBlizzardResponseBuilder::fromJsonResponse(
                     $request,
-                    Status::OK,
+                    HttpStatus::OK,
                     FixtureUtils::getMockBlizzardResponse($this->getValidResponseFixtureName()),
                     ['Last-Modified' => (new \DateTimeImmutable())->format(\DateTimeInterface::RFC822)]
                 )
