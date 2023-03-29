@@ -7,7 +7,7 @@ use Amp\Cache\LocalCache;
 use Amp\Http\Client\HttpClient;
 use Amp\Http\Client\HttpClientBuilder;
 use Amp\Http\Client\Request;
-use Amp\Http\Status;
+use Amp\Http\HttpStatus;
 use Cspray\HttpClientTestInterceptor\HttpMockAwareTestTrait;
 use Cspray\HttpRequestBuilder\RequestBuilder;
 use CuyZ\Valinor\Mapper\TreeMapper;
@@ -100,8 +100,8 @@ class AmpCharacterProfileApiCharacterStatusTest extends TestCase {
             ->onRequest(
                 $request = $this->request()
             )->returnResponse(
-                MockBlizzardResponseBuilder::fromJsonResponse($request, Status::NOT_FOUND, [
-                    'code' => Status::NOT_FOUND,
+                MockBlizzardResponseBuilder::fromJsonResponse($request, HttpStatus::NOT_FOUND, [
+                    'code' => HttpStatus::NOT_FOUND,
                     'type' => 'BLZWEBAPI00000404',
                     'detail' => 'Not Found'
                 ])
@@ -120,7 +120,7 @@ class AmpCharacterProfileApiCharacterStatusTest extends TestCase {
             ->onRequest(
                 $request = $this->request()
             )->returnResponse(
-                MockBlizzardResponseBuilder::fromJsonResponse($request, Status::OK, [
+                MockBlizzardResponseBuilder::fromJsonResponse($request, HttpStatus::OK, [
                     '_links' => [
                         'self' => [
                             'href' => 'https://us.api.blizzard.com/profile/wow/character/area-52/adaxion/status?namespace=profile-us'
@@ -144,7 +144,7 @@ class AmpCharacterProfileApiCharacterStatusTest extends TestCase {
             ->onRequest(
                 $request = $this->request()
             )->returnResponse(
-                MockBlizzardResponseBuilder::fromJsonResponse($request, Status::OK, [
+                MockBlizzardResponseBuilder::fromJsonResponse($request, HttpStatus::OK, [
                     '_links' => [
                         'self' => [
                             'href' => 'https://us.api.blizzard.com/profile/wow/character/area-52/adaxion/status?namespace=profile-us'
@@ -168,7 +168,7 @@ class AmpCharacterProfileApiCharacterStatusTest extends TestCase {
             ->onRequest(
                 $request = $this->request()
             )->returnResponse(
-                MockBlizzardResponseBuilder::fromJsonResponse($request, Status::OK, [
+                MockBlizzardResponseBuilder::fromJsonResponse($request, HttpStatus::OK, [
                     '_links' => [
                         'self' => [
                             'href' => 'https://us.api.blizzard.com/profile/wow/character/area-52/adaxion/status?namespace=profile-us'
@@ -206,8 +206,8 @@ class AmpCharacterProfileApiCharacterStatusTest extends TestCase {
             ->onRequest(
                 $request = $this->request()
             )->returnResponse(
-                MockBlizzardResponseBuilder::fromJsonResponse($request, Status::TOO_MANY_REQUESTS, [
-                    'code' => Status::TOO_MANY_REQUESTS,
+                MockBlizzardResponseBuilder::fromJsonResponse($request, HttpStatus::TOO_MANY_REQUESTS, [
+                    'code' => HttpStatus::TOO_MANY_REQUESTS,
                     'type' => 'BLZWEBAPI00000429',
                     'detail' => 'Too Many Requests'
                 ])
@@ -229,8 +229,8 @@ class AmpCharacterProfileApiCharacterStatusTest extends TestCase {
             ->onRequest(
                 $request = $this->request()
             )->returnResponse(
-                MockBlizzardResponseBuilder::fromJsonResponse($request, Status::FORBIDDEN, [
-                    'code' => Status::FORBIDDEN,
+                MockBlizzardResponseBuilder::fromJsonResponse($request, HttpStatus::FORBIDDEN, [
+                    'code' => HttpStatus::FORBIDDEN,
                     'type' => 'BLZWEBAPI00000403',
                     'detail' => 'Forbidden'
                 ])

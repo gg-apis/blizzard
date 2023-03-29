@@ -5,7 +5,7 @@ namespace GGApis\Blizzard\WorldOfWarcraft\Internal;
 use Amp\Cache\Cache;
 use Amp\Http\Client\HttpClient;
 use Amp\Http\Client\Response;
-use Amp\Http\Status;
+use Amp\Http\HttpStatus;
 use Closure;
 use Cspray\HttpRequestBuilder\RequestBuilder;
 use CuyZ\Valinor\Mapper\Source\Source;
@@ -63,7 +63,7 @@ abstract class AbstractBlizzardApi {
 
         $response = $this->client->request(RequestBuilder::withHeaders($headers)->get($uri));
 
-        if ($response->getStatus() === Status::NOT_MODIFIED) {
+        if ($response->getStatus() === HttpStatus::NOT_MODIFIED) {
             return $hydrator($entry['content']);
         }
 
@@ -91,7 +91,7 @@ abstract class AbstractBlizzardApi {
     }
 
     final protected function validateRateThrottlingNotActive(int $status, string $body) : void {
-        if ($status === Status::TOO_MANY_REQUESTS) {
+        if ($status === HttpStatus::TOO_MANY_REQUESTS) {
             throw RateThrottled::fromRequestThrottled(
                 $this->mapper->map(BlizzardError::class, Source::json($body))
             );
@@ -99,7 +99,7 @@ abstract class AbstractBlizzardApi {
     }
 
     final protected function validateIsSuccessfulResponse(int $status, string $body, Closure $exceptionFactory) : void {
-        if ($status !== Status::OK) {
+        if ($status !== HttpStatus::OK) {
             $blizzardError = $this->mapper->map(BlizzardError::class, Source::json($body));
             throw $exceptionFactory($blizzardError);
         }

@@ -2,7 +2,7 @@
 
 namespace GGApis\Blizzard\WorldOfWarcraft\ProfileApi;
 
-use Amp\Http\Status;
+use Amp\Http\HttpStatus;
 use Cspray\AnnotatedContainer\Attribute\Service;
 use Cspray\HttpRequestBuilder\RequestBuilder;
 use GGApis\Blizzard\Exception\UnableToFetchCharacterStatus;
@@ -31,7 +31,7 @@ class AmpCharacterProfileApi extends AbstractBlizzardApi  implements CharacterPr
         );
         $response = $this->client->request($request);
 
-        if ($response->getStatus() === Status::NOT_FOUND) {
+        if ($response->getStatus() === HttpStatus::NOT_FOUND) {
             return CharacterStatus::NotFound;
         }
 

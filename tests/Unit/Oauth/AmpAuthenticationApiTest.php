@@ -7,7 +7,7 @@ use Amp\Http\Client\HttpClient;
 use Amp\Http\Client\HttpClientBuilder;
 use Amp\Http\Client\Request;
 use Amp\Http\Client\Response;
-use Amp\Http\Status;
+use Amp\Http\HttpStatus;
 use Cspray\HttpClientTestInterceptor\HttpMockAwareTestTrait;
 use Cspray\HttpRequestBuilder\RequestBuilder;
 use CuyZ\Valinor\MapperBuilder;
@@ -121,7 +121,7 @@ class AmpAuthenticationApiTest extends TestCase {
     public function testGenerateAccessTokenWithValidCodeAndState() : void {
         $this->httpMock()
             ->onRequest($request = $this->getAccessTokenRequest())
-            ->returnResponse($this->getMockResponse($request, Status::OK, [
+            ->returnResponse($this->getMockResponse($request, HttpStatus::OK, [
                 'access_token' => 'access-token',
                 'token_type' => 'bearer',
                 'expires_in' => 2500,
@@ -151,7 +151,7 @@ class AmpAuthenticationApiTest extends TestCase {
     public function testScopesRespectedFromBlizzardResponse() : void {
         $this->httpMock()
             ->onRequest($request = $this->getAccessTokenRequest())
-            ->returnResponse($this->getMockResponse($request, Status::OK, [
+            ->returnResponse($this->getMockResponse($request, HttpStatus::OK, [
                 'access_token' => 'known-access-token',
                 'token_type' => 'bearer',
                 'expires_in' => 4000,
@@ -204,7 +204,7 @@ TEXT;
     public function testGenerateAccessTokenWithInvalidResponseFromBlizzardThrowsException() : void {
         $this->httpMock()
             ->onRequest($request = $this->getAccessTokenRequest())
-            ->returnResponse($this->getMockResponse($request, Status::UNAUTHORIZED, [
+            ->returnResponse($this->getMockResponse($request, HttpStatus::UNAUTHORIZED, [
                 'code' => 401,
                 'type' => 'BLZWEBAPI00000401',
                 'detail' => 'Unauthorized'
@@ -233,7 +233,7 @@ TEXT;
     public function testGenerateAccessTokenWithRateThrottledFromBlizzardThrowsException() : void {
         $this->httpMock()
             ->onRequest($request = $this->getAccessTokenRequest())
-            ->returnResponse($this->getMockResponse($request, Status::TOO_MANY_REQUESTS, [
+            ->returnResponse($this->getMockResponse($request, HttpStatus::TOO_MANY_REQUESTS, [
                 'code' => 429,
                 'type' => 'BLZWEBAPI00000429',
                 'detail' => 'Too Many Requests'
@@ -266,7 +266,7 @@ TEXT;
             ->returnResponse(
                 new Response(
                     '1.1',
-                    Status::OK,
+                    HttpStatus::OK,
                     null,
                     ['Content-Type' => 'text/plain', 'Content-Length' => (string) strlen($responseBody)],
                     $responseBody,
@@ -296,7 +296,7 @@ TEXT;
             ->get('https://oauth.battle.net/userinfo');
         $this->httpMock()
             ->onRequest($request)
-            ->returnResponse($this->getMockResponse($request, Status::OK, [
+            ->returnResponse($this->getMockResponse($request, HttpStatus::OK, [
                 'sub' => '420',
                 'id' => $id = random_int(0, PHP_INT_MAX),
                 'battletag' => $battleTag = bin2hex(random_bytes(4))
@@ -315,8 +315,8 @@ TEXT;
             ->get('https://oauth.battle.net/userinfo');
         $this->httpMock()
             ->onRequest($request)
-            ->returnResponse($this->getMockResponse($request, Status::FORBIDDEN, [
-                'code' => Status::FORBIDDEN,
+            ->returnResponse($this->getMockResponse($request, HttpStatus::FORBIDDEN, [
+                'code' => HttpStatus::FORBIDDEN,
                 'type' => 'BLZWEBAPI00000403',
                 'detail' => 'Forbidden',
             ]));
@@ -337,7 +337,7 @@ TEXT;
 
         $this->httpMock()
             ->onRequest($request)
-            ->returnResponse($this->getMockResponse($request, Status::TOO_MANY_REQUESTS, [
+            ->returnResponse($this->getMockResponse($request, HttpStatus::TOO_MANY_REQUESTS, [
                 'code' => 429,
                 'type' => 'BLZWEBAPI00000429',
                 'detail' => 'Too Many Requests'
@@ -362,7 +362,7 @@ TEXT;
             ->returnResponse(
                 new Response(
                     '1.1',
-                    Status::OK,
+                    HttpStatus::OK,
                     null,
                     ['Content-Type' => 'text/plain', 'Content-Length' => (string) strlen($responseBody)],
                     $responseBody,
@@ -385,7 +385,7 @@ TEXT;
                 ])->withFormBody([
                     'grant_type' => 'client_credentials'
                 ])->post('https://oauth.battle.net/token')
-            )->returnResponse(MockBlizzardResponseBuilder::fromJsonResponse($request, Status::OK, [
+            )->returnResponse(MockBlizzardResponseBuilder::fromJsonResponse($request, HttpStatus::OK, [
                 'access_token' => $expectedToken = bin2hex(random_bytes(8)),
                 'token_type' => 'bearer',
                 'expires_in' => 2500,
