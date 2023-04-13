@@ -3,6 +3,7 @@
 namespace GGApis\Blizzard\Oauth;
 
 use Amp\Cache\Cache;
+use Amp\Http\Client\Form;
 use Amp\Http\Client\HttpClient;
 use Cspray\AnnotatedContainer\Attribute\Service;
 use Cspray\HttpRequestBuilder\RequestBuilder;
@@ -57,13 +58,9 @@ final class AmpAuthenticationApi extends AbstractBlizzardApi implements Authenti
         $stateValidator->markStateAsUsed($authorizationParameters->state);
 
         $request = RequestBuilder::withHeader(
-            'Authorization', BasicAuthHeader::fromUserInfo($this->config->getClientId(), $this->config->getClientSecret())->toString()
-        )->withFormBody([
-            'redirect_uri' => (string) $authorizationParameters->redirectUri,
-            'scope' => implode(' ', array_map(static fn(Scope $scope) => $scope->value, $authorizationParameters->scopes)),
-            'grant_type' => $authorizationParameters->grantType,
-            'code' => $authorizationParameters->code
-        ])->post($this->oauthUri->withPath('/token'));
+                'Authorization', BasicAuthHeader::fromUserInfo($this->config->getClientId(), $this->config->getClientSecret())->toString()
+            )->withFormBody($this->createFormFromAuthorizationParameters($authorizationParameters))
+            ->post($this->oauthUri->withPath('/token'));
 
         $response = $this->client->request($request);
 
@@ -83,10 +80,28 @@ final class AmpAuthenticationApi extends AbstractBlizzardApi implements Authenti
         );
     }
 
+    private function createFormFromAuthorizationParameters(AuthorizationParameters $authorizationParameters) : Form {
+        $form = new Form();
+        $form->addText('redirect_uri', (string) $authorizationParameters->redirectUri);
+        $form->addText(
+            'scope',
+            implode(' ', array_map(
+                static fn(Scope $scope) => $scope->value,
+                $authorizationParameters->scopes
+            ))
+        );
+        $form->addText('grant_type', $authorizationParameters->grantType);
+        $form->addText('code', $authorizationParameters->code);
+        return $form;
+    }
+
     public function generateClientAccessToken() : ClientAccessToken {
+        $form = new Form();
+        $form->addText('grant_type', 'client_credentials');
         $request = RequestBuilder::withHeader(
-            'Authorization', BasicAuthHeader::fromUserInfo($this->config->getClientId(), $this->config->getClientSecret())->toString()
-        )->withFormBody(['grant_type' => 'client_credentials'])->post($this->oauthUri->withPath('/token'));
+                'Authorization', BasicAuthHeader::fromUserInfo($this->config->getClientId(), $this->config->getClientSecret())->toString()
+            )->withFormBody($form)
+            ->post($this->oauthUri->withPath('/token'));
         $response = $this->client->request($request);
 
         return $this->mapper->map(ClientAccessToken::class, Source::json($response->getBody()->buffer())->camelCaseKeys());

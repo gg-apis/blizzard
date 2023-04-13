@@ -3,6 +3,7 @@
 namespace GGApis\Blizzard\Test\Unit\Oauth;
 
 use Amp\Cache\LocalCache;
+use Amp\Http\Client\Form;
 use Amp\Http\Client\HttpClient;
 use Amp\Http\Client\HttpClientBuilder;
 use Amp\Http\Client\Request;
@@ -82,14 +83,15 @@ class AmpAuthenticationApiTest extends TestCase {
     }
 
     private function getAccessTokenRequest() : Request {
-        return RequestBuilder::withFormBody([
-            'redirect_uri' => 'http://localhost/example/redirect',
-            'scope' => 'openid wow.profile',
-            'grant_type' => 'authorization_code',
-            'code' => 'known-code'
-        ])->addHeaders([
-            'Authorization' => 'Basic ' . base64_encode('known-client-id:known-client-secret')
-        ])->post('https://oauth.battle.net/token');
+        $form = new Form();
+        $form->addText('redirect_uri', 'http://localhost/example/redirect');
+        $form->addText('scope', 'openid wow.profile');
+        $form->addText('grant_type', 'authorization_code');
+        $form->addText('code', 'known-code');
+        return RequestBuilder::withFormBody($form)
+            ->addHeaders([
+                'Authorization' => 'Basic ' . base64_encode('known-client-id:known-client-secret')
+            ])->post('https://oauth.battle.net/token');
     }
 
     private function getMockResponse(Request $request, int $statusCode, array $body) : Response {
@@ -378,13 +380,15 @@ TEXT;
     }
 
     public function testGetClientAccessTokenValidClientIdAndSecretReturnsAccessToken() : void {
+        $form = new Form();
+        $form->addText('grant_type', 'client_credentials');
+
         $this->httpMock()
             ->onRequest(
                 $request = RequestBuilder::withHeaders([
-                    'Authorization' => BasicAuthHeader::fromUserInfo('known-client-id', 'known-client-secret')->toString()
-                ])->withFormBody([
-                    'grant_type' => 'client_credentials'
-                ])->post('https://oauth.battle.net/token')
+                        'Authorization' => BasicAuthHeader::fromUserInfo('known-client-id', 'known-client-secret')->toString()
+                    ])->withFormBody($form)
+                    ->post('https://oauth.battle.net/token')
             )->returnResponse(MockBlizzardResponseBuilder::fromJsonResponse($request, HttpStatus::OK, [
                 'access_token' => $expectedToken = bin2hex(random_bytes(8)),
                 'token_type' => 'bearer',
