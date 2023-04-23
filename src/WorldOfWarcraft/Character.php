@@ -2,7 +2,7 @@
 
 namespace GGApis\Blizzard\WorldOfWarcraft;
 
-final class Character {
+final class Character implements CharacterIdentifier {
 
     public function __construct(
         public readonly int           $id,
@@ -15,4 +15,11 @@ final class Character {
         public readonly Faction       $faction
     ) {}
 
+    public function getLowercaseName() : string {
+        return strtolower($this->name);
+    }
+
+    public function getRealmSlug() : string {
+        return $this->realm->slug;
+    }
 }

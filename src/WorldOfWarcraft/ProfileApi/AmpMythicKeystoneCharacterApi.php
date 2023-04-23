@@ -11,6 +11,7 @@ use GGApis\Blizzard\Oauth\ClientAccessToken;
 use GGApis\Blizzard\RegionAndLocale;
 use GGApis\Blizzard\WorldOfWarcraft\BlizzardNamespace;
 use GGApis\Blizzard\WorldOfWarcraft\Character;
+use GGApis\Blizzard\WorldOfWarcraft\CharacterIdentifier;
 use GGApis\Blizzard\WorldOfWarcraft\Internal\AbstractBlizzardApi;
 use GGApis\Blizzard\WorldOfWarcraft\MythicKeystoneCharacterProfile;
 use GGApis\Blizzard\WorldOfWarcraft\MythicKeystoneCharacterSeasonDetails;
@@ -22,13 +23,13 @@ class AmpMythicKeystoneCharacterApi extends AbstractBlizzardApi implements Mythi
 
     public function fetchMythicKeystoneCharacterProfile(
         ClientAccessToken $token,
-        Character $character,
+        CharacterIdentifier $character,
         RegionAndLocale $regionAndLocale = null
     ) : MythicKeystoneCharacterProfile {
         $path = sprintf(
             '/profile/wow/character/%s/%s/mythic-keystone-profile',
-            $character->realm->slug,
-            strtolower($character->name)
+            $character->getRealmSlug(),
+            $character->getLowercaseName()
         );
 
         $resource = $this->processFetchResourceRequest(
@@ -44,7 +45,7 @@ class AmpMythicKeystoneCharacterApi extends AbstractBlizzardApi implements Mythi
         return $resource;
     }
 
-    private function hydrateCharacterProfile(Character $character, string $body) : MythicKeystoneCharacterProfile {
+    private function hydrateCharacterProfile(CharacterIdentifier $character, string $body) : MythicKeystoneCharacterProfile {
         return $this->mapper->map(
             MythicKeystoneCharacterProfile::class,
             Source::iterable(
@@ -58,7 +59,7 @@ class AmpMythicKeystoneCharacterApi extends AbstractBlizzardApi implements Mythi
         );
     }
 
-    private function getMythicKeystoneCharacterProfileSource(Character $character, string $json) : IteratorAggregate {
+    private function getMythicKeystoneCharacterProfileSource(CharacterIdentifier $character, string $json) : IteratorAggregate {
         return new class($character, new JsonSource($json)) implements IteratorAggregate {
 
             private readonly iterable $source;
@@ -105,14 +106,14 @@ class AmpMythicKeystoneCharacterApi extends AbstractBlizzardApi implements Mythi
 
     public function fetchMythicKeystoneCharacterSeasonDetails(
         ClientAccessToken $token,
-        Character $character,
+        CharacterIdentifier $character,
         int $seasonId,
         RegionAndLocale $regionAndLocale = null
     ) : MythicKeystoneCharacterSeasonDetails {
         $path = sprintf(
             '/profile/wow/character/%s/%s/mythic-keystone-profile/season/9',
-            $character->realm->slug,
-            strtolower($character->name)
+            $character->getRealmSlug(),
+            $character->getLowercaseName()
         );
 
         $resource = $this->processFetchResourceRequest(
@@ -128,7 +129,7 @@ class AmpMythicKeystoneCharacterApi extends AbstractBlizzardApi implements Mythi
         return $resource;
     }
 
-    private function hydrateCharacterSeasonDetails(Character $character, string $body) : MythicKeystoneCharacterSeasonDetails {
+    private function hydrateCharacterSeasonDetails(CharacterIdentifier $character, string $body) : MythicKeystoneCharacterSeasonDetails {
         return $this->mapper->map(
             MythicKeystoneCharacterSeasonDetails::class,
             Source::iterable(
@@ -142,7 +143,7 @@ class AmpMythicKeystoneCharacterApi extends AbstractBlizzardApi implements Mythi
         );
     }
 
-    private function getMythicKeystoneCharacterSeasonDetailsSource(Character $character, string $body) : IteratorAggregate {
+    private function getMythicKeystoneCharacterSeasonDetailsSource(CharacterIdentifier $character, string $body) : IteratorAggregate {
         return new class($character, new JsonSource($body)) implements IteratorAggregate {
 
             private readonly iterable $source;
