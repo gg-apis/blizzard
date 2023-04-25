@@ -65,7 +65,7 @@ class AmpMythicKeystoneCharacterApi extends AbstractBlizzardApi implements Mythi
             private readonly iterable $source;
 
             public function __construct(
-                private readonly Character $character,
+                private readonly CharacterIdentifier $character,
                 private readonly JsonSource $json
             ) {
                 $this->source = $this->transformSource($this->json);
