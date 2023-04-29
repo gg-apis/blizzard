@@ -95,6 +95,15 @@ class AmpMythicKeystoneCharacterApi extends AbstractBlizzardApi implements Mythi
                     }
                     $return[$key] = $val;
                 }
+
+                if (!array_key_exists('current_mythic_rating', $return)) {
+                    $return['current_mythic_rating'] = null;
+                }
+
+                if (!array_key_exists('seasonIds', $return)) {
+                    $return['seasonIds'] = [];
+                }
+
                 return $return;
             }
 

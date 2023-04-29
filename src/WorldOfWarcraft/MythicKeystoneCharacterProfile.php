@@ -9,7 +9,7 @@ final class MythicKeystoneCharacterProfile {
         public readonly int $currentPeriodId,
         /** @var list<int> */
         public readonly array $seasonIds,
-        public readonly MythicKeystoneRating $rating
+        public readonly ?MythicKeystoneRating $rating
     ) {}
 
 }
