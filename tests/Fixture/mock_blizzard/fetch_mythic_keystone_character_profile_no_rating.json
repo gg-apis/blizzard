@@ -1,0 +1,30 @@
+{
+  "_links": {
+    "self": {
+      "href": "https://us.api.blizzard.com/profile/wow/character/sargeras/velukh/mythic-keystone-profile?namespace=profile-us"
+    }
+  },
+  "current_period": {
+    "period": {
+      "key": {
+        "href": "https://us.api.blizzard.com/data/wow/mythic-keystone/period/876?namespace=dynamic-us"
+      },
+      "id": 876
+    }
+  },
+  "character": {
+    "key": {
+      "href": "https://us.api.blizzard.com/profile/wow/character/sargeras/velukh?namespace=profile-us"
+    },
+    "name": "Velukh",
+    "id": 193498135,
+    "realm": {
+      "key": {
+        "href": "https://us.api.blizzard.com/data/wow/realm/76?namespace=dynamic-us"
+      },
+      "name": "Sargeras",
+      "id": 76,
+      "slug": "sargeras"
+    }
+  }
+}
