@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace GGApis\Blizzard\WorldOfWarcraft;
+namespace GGApis\Blizzard\WorldOfWarcraft\PetCollection;
 
-final class PlayableClass {
+final class PetSpecies {
 
     public function __construct(
         public readonly int $id,

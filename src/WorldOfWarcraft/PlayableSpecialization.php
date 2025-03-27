@@ -2,7 +2,7 @@
 
 namespace GGApis\Blizzard\WorldOfWarcraft;
 
-class PlayableSpecialization {
+final class PlayableSpecialization {
 
     public function __construct(
         public readonly int $id,

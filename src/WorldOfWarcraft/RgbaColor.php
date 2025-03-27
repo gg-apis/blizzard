@@ -2,7 +2,7 @@
 
 namespace GGApis\Blizzard\WorldOfWarcraft;
 
-class RgbaColor {
+final class RgbaColor {
 
     public readonly float $a;
 

@@ -12,13 +12,12 @@ use CuyZ\Valinor\MapperBuilder;
 use GGApis\Blizzard\ApiConfig;
 use GGApis\Blizzard\Oauth\AmpAuthenticationApi;
 use GGApis\Blizzard\Oauth\AuthenticationApi;
-use GGApis\Blizzard\Oauth\AuthenticationStateValidator;
-use GGApis\Blizzard\WorldOfWarcraft\ProfileApi\AmpCharacterProfileApi;
-use GGApis\Blizzard\WorldOfWarcraft\ProfileApi\AmpMythicKeystoneCharacterApi;
-use GGApis\Blizzard\WorldOfWarcraft\ProfileApi\AmpUserProfileApi;
-use GGApis\Blizzard\WorldOfWarcraft\ProfileApi\CharacterProfileApi;
-use GGApis\Blizzard\WorldOfWarcraft\ProfileApi\MythicKeystoneCharacterApi;
-use GGApis\Blizzard\WorldOfWarcraft\ProfileApi\UserProfileApi;
+use GGApis\Blizzard\WorldOfWarcraft\CharacterProfile\AmpCharacterProfileApi;
+use GGApis\Blizzard\WorldOfWarcraft\CharacterProfile\CharacterProfileApi;
+use GGApis\Blizzard\WorldOfWarcraft\MythicKeystone\AmpMythicKeystoneCharacterApi;
+use GGApis\Blizzard\WorldOfWarcraft\MythicKeystone\MythicKeystoneCharacterApi;
+use GGApis\Blizzard\WorldOfWarcraft\UserProfile\AmpUserProfileApi;
+use GGApis\Blizzard\WorldOfWarcraft\UserProfile\UserProfileApi;
 
 final class ApiFactory {
 

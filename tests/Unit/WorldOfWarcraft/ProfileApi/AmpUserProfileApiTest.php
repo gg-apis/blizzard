@@ -13,17 +13,17 @@ use GGApis\Blizzard\Oauth\Scope;
 use GGApis\Blizzard\Region;
 use GGApis\Blizzard\RegionAndLocale;
 use GGApis\Blizzard\Test\Unit\WorldOfWarcraft\BlizzardProfileApiTestCase;
-use GGApis\Blizzard\WorldOfWarcraft\Account;
 use GGApis\Blizzard\WorldOfWarcraft\BlizzardNamespace;
-use GGApis\Blizzard\WorldOfWarcraft\Character;
-use GGApis\Blizzard\WorldOfWarcraft\Faction;
-use GGApis\Blizzard\WorldOfWarcraft\Gender;
 use GGApis\Blizzard\WorldOfWarcraft\Internal\AbstractBlizzardApi;
-use GGApis\Blizzard\WorldOfWarcraft\PlayableClass;
 use GGApis\Blizzard\WorldOfWarcraft\PlayableRace;
-use GGApis\Blizzard\WorldOfWarcraft\ProfileApi\AmpUserProfileApi;
-use GGApis\Blizzard\WorldOfWarcraft\Realm;
-use GGApis\Blizzard\WorldOfWarcraft\UserProfile;
+use GGApis\Blizzard\WorldOfWarcraft\UserProfile\Account;
+use GGApis\Blizzard\WorldOfWarcraft\UserProfile\AmpUserProfileApi;
+use GGApis\Blizzard\WorldOfWarcraft\UserProfile\Character;
+use GGApis\Blizzard\WorldOfWarcraft\UserProfile\Faction;
+use GGApis\Blizzard\WorldOfWarcraft\UserProfile\Gender;
+use GGApis\Blizzard\WorldOfWarcraft\UserProfile\PlayableClass;
+use GGApis\Blizzard\WorldOfWarcraft\UserProfile\Realm;
+use GGApis\Blizzard\WorldOfWarcraft\UserProfile\UserProfile;
 use PHPUnit\Framework\Attributes\CoversClass;
 
 #[
@@ -62,15 +62,15 @@ class AmpUserProfileApiTest extends BlizzardProfileApiTestCase {
         );
     }
 
-    protected function getApiNamespace(Region $region) : string {
+    protected function apiNamespace(Region $region) : string {
         return sprintf('profile-%s', $region->getApiNamespace());
     }
 
-    protected function getApiPath() : string {
+    protected function apiPath() : string {
         return '/profile/user/wow';
     }
 
-    protected function getValidResponseFixtureName() : string {
+    protected function validResponseFixtureName() : string {
         return 'fetch_wow_profile';
     }
 
@@ -89,11 +89,11 @@ class AmpUserProfileApiTest extends BlizzardProfileApiTestCase {
         self::assertCount(3, $resource->accounts[0]->characters);
     }
 
-    protected function getExpectedUnableToFetchException() : string {
+    protected function expectedUnableToFetchException() : string {
         return UnableToFetchWorldOfWarcraftUserProfile::class;
     }
 
-    protected function getExpectedUnableToFetchExceptionMessage() : string {
+    protected function expectedUnableToFetchExceptionMessage() : string {
         return 'Blizzard responded with an invalid status code (403) while fetching World of Warcraft user profile.';
     }
 }

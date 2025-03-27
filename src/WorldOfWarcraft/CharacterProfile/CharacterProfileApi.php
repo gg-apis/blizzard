@@ -1,12 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace GGApis\Blizzard\WorldOfWarcraft\ProfileApi;
+namespace GGApis\Blizzard\WorldOfWarcraft\CharacterProfile;
 
 use Cspray\AnnotatedContainer\Attribute\Service;
 use GGApis\Blizzard\Oauth\ClientAccessToken;
 use GGApis\Blizzard\Region;
-use GGApis\Blizzard\WorldOfWarcraft\Character;
-use GGApis\Blizzard\WorldOfWarcraft\CharacterStatus;
+use GGApis\Blizzard\WorldOfWarcraft\UserProfile\Character;
 
 #[Service]
 interface CharacterProfileApi {

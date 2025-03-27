@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace GGApis\Blizzard\WorldOfWarcraft\ProfileApi;
+namespace GGApis\Blizzard\WorldOfWarcraft\MythicKeystone;
 
 use Cspray\AnnotatedContainer\Attribute\Service;
 use CuyZ\Valinor\Mapper\Source\JsonSource;
@@ -10,11 +10,7 @@ use GGApis\Blizzard\Exception\UnableToFetchMythicKeystoneCharacterSeasonDetails;
 use GGApis\Blizzard\Oauth\ClientAccessToken;
 use GGApis\Blizzard\RegionAndLocale;
 use GGApis\Blizzard\WorldOfWarcraft\BlizzardNamespace;
-use GGApis\Blizzard\WorldOfWarcraft\Character;
-use GGApis\Blizzard\WorldOfWarcraft\CharacterIdentifier;
 use GGApis\Blizzard\WorldOfWarcraft\Internal\AbstractBlizzardApi;
-use GGApis\Blizzard\WorldOfWarcraft\MythicKeystoneCharacterProfile;
-use GGApis\Blizzard\WorldOfWarcraft\MythicKeystoneCharacterSeasonDetails;
 use IteratorAggregate;
 use Traversable;
 

@@ -1,6 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace GGApis\Blizzard\WorldOfWarcraft;
+namespace GGApis\Blizzard\WorldOfWarcraft\MythicKeystone;
+
+use GGApis\Blizzard\WorldOfWarcraft\PlayableRace;
+use GGApis\Blizzard\WorldOfWarcraft\PlayableSpecialization;
 
 class MythicKeystonePartyMember {
 

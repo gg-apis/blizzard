@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace GGApis\Blizzard\WorldOfWarcraft\ProfileApi;
+namespace GGApis\Blizzard\WorldOfWarcraft\CharacterProfile;
 
 use Amp\Http\HttpStatus;
 use Cspray\AnnotatedContainer\Attribute\Service;
@@ -10,9 +10,8 @@ use GGApis\Blizzard\Http\BearerTokenHeader;
 use GGApis\Blizzard\Oauth\ClientAccessToken;
 use GGApis\Blizzard\Region;
 use GGApis\Blizzard\WorldOfWarcraft\BlizzardNamespace;
-use GGApis\Blizzard\WorldOfWarcraft\Character;
-use GGApis\Blizzard\WorldOfWarcraft\CharacterStatus;
 use GGApis\Blizzard\WorldOfWarcraft\Internal\AbstractBlizzardApi;
+use GGApis\Blizzard\WorldOfWarcraft\UserProfile\Character;
 
 #[Service]
 class AmpCharacterProfileApi extends AbstractBlizzardApi  implements CharacterProfileApi {

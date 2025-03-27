@@ -2,12 +2,12 @@
 
 namespace GGApis\Blizzard\Test\Helper;
 
-use GGApis\Blizzard\WorldOfWarcraft\Character;
-use GGApis\Blizzard\WorldOfWarcraft\Faction;
-use GGApis\Blizzard\WorldOfWarcraft\Gender;
-use GGApis\Blizzard\WorldOfWarcraft\PlayableClass;
 use GGApis\Blizzard\WorldOfWarcraft\PlayableRace;
-use GGApis\Blizzard\WorldOfWarcraft\Realm;
+use GGApis\Blizzard\WorldOfWarcraft\UserProfile\Character;
+use GGApis\Blizzard\WorldOfWarcraft\UserProfile\Faction;
+use GGApis\Blizzard\WorldOfWarcraft\UserProfile\Gender;
+use GGApis\Blizzard\WorldOfWarcraft\UserProfile\PlayableClass;
+use GGApis\Blizzard\WorldOfWarcraft\UserProfile\Realm;
 
 final class FixtureUtils {
 

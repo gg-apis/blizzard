@@ -1,15 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace GGApis\Blizzard\WorldOfWarcraft\ProfileApi;
+namespace GGApis\Blizzard\WorldOfWarcraft\UserProfile;
 
 use Cspray\AnnotatedContainer\Attribute\Service;
 use CuyZ\Valinor\Mapper\Source\Source;
 use GGApis\Blizzard\Exception\UnableToFetchWorldOfWarcraftUserProfile;
-use GGApis\Blizzard\RegionAndLocale;
 use GGApis\Blizzard\Oauth\OauthAccessToken;
+use GGApis\Blizzard\RegionAndLocale;
 use GGApis\Blizzard\WorldOfWarcraft\BlizzardNamespace;
 use GGApis\Blizzard\WorldOfWarcraft\Internal\AbstractBlizzardApi;
-use GGApis\Blizzard\WorldOfWarcraft\UserProfile;
 
 #[Service]
 final class AmpUserProfileApi extends AbstractBlizzardApi implements UserProfileApi {

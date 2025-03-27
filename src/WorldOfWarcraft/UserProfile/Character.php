@@ -1,6 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace GGApis\Blizzard\WorldOfWarcraft;
+namespace GGApis\Blizzard\WorldOfWarcraft\UserProfile;
+
+use GGApis\Blizzard\WorldOfWarcraft\MythicKeystone\CharacterIdentifier;
+use GGApis\Blizzard\WorldOfWarcraft\PlayableRace;
 
 final class Character implements CharacterIdentifier {
 

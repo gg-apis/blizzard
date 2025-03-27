@@ -24,6 +24,7 @@ use GGApis\Blizzard\Test\Helper\MockApiConfig;
 use GGApis\Blizzard\Test\Helper\MockBlizzardResponseBuilder;
 use GGApis\Blizzard\Test\Helper\UriUtils;
 use PHPUnit\Framework\TestCase;
+use Throwable;
 
 abstract class BlizzardProfileApiTestCase extends TestCase {
 
@@ -55,7 +56,7 @@ abstract class BlizzardProfileApiTestCase extends TestCase {
 
         $builder = RequestBuilder::withHeaders([
             'Authorization' => 'Bearer access-token',
-            'Battlenet-Namespace' => $this->getApiNamespace($region),
+            'Battlenet-Namespace' => $this->apiNamespace($region),
         ]);
 
         if ($lastModified !== null) {
@@ -68,7 +69,7 @@ abstract class BlizzardProfileApiTestCase extends TestCase {
             UriUtils::uriWithLocale(
                 UriUtils::apiUriForRegion($region),
                 $locale
-            )->withPath($this->getApiPath())
+            )->withPath($this->apiPath())
         );
     }
 
@@ -79,7 +80,7 @@ abstract class BlizzardProfileApiTestCase extends TestCase {
                 MockBlizzardResponseBuilder::fromJsonResponse(
                     $request,
                     HttpStatus::OK,
-                    FixtureUtils::getMockBlizzardResponse($this->getValidResponseFixtureName()),
+                    FixtureUtils::getMockBlizzardResponse($this->validResponseFixtureName()),
                     ['Last-Modified' => (new DateTimeImmutable())->format(DateTimeInterface::RFC822)]
                 )
             );
@@ -131,8 +132,8 @@ abstract class BlizzardProfileApiTestCase extends TestCase {
                 ])
             );
 
-        $this->expectException($this->getExpectedUnableToFetchException());
-        $this->expectExceptionMessage($this->getExpectedUnableToFetchExceptionMessage());
+        $this->expectException($this->expectedUnableToFetchException());
+        $this->expectExceptionMessage($this->expectedUnableToFetchExceptionMessage());
 
         $this->executeApiCall(null);
     }
@@ -144,7 +145,7 @@ abstract class BlizzardProfileApiTestCase extends TestCase {
                 MockBlizzardResponseBuilder::fromJsonResponse(
                     $request,
                     HttpStatus::OK,
-                    FixtureUtils::getMockBlizzardResponse($this->getValidResponseFixtureName()),
+                    FixtureUtils::getMockBlizzardResponse($this->validResponseFixtureName()),
                     ['Last-Modified' => $lastModified = (new \DateTimeImmutable())->format(\DateTimeInterface::RFC822)]
                 )
             );
@@ -159,7 +160,7 @@ abstract class BlizzardProfileApiTestCase extends TestCase {
         self::assertNotNull($entry);
         self::assertSame([
             'lastModified' => $lastModified,
-            'content' => FixtureUtils::getMockBlizzardResponse($this->getValidResponseFixtureName())
+            'content' => FixtureUtils::getMockBlizzardResponse($this->validResponseFixtureName())
         ], $entry);
     }
 
@@ -174,7 +175,7 @@ abstract class BlizzardProfileApiTestCase extends TestCase {
         $cacheKey = md5((string) $request->getUri());
         $this->cache->set($cacheKey, [
             'lastModified' => $lastModified->format(DateTimeInterface::RFC822),
-            'content' => FixtureUtils::getMockBlizzardResponse($this->getValidResponseFixtureName())
+            'content' => FixtureUtils::getMockBlizzardResponse($this->validResponseFixtureName())
         ]);
 
         $this->assertResourceIsValid($this->executeApiCall(null));
@@ -187,7 +188,7 @@ abstract class BlizzardProfileApiTestCase extends TestCase {
                 MockBlizzardResponseBuilder::fromJsonResponse(
                     $request,
                     HttpStatus::OK,
-                    FixtureUtils::getMockBlizzardResponse($this->getValidResponseFixtureName()),
+                    FixtureUtils::getMockBlizzardResponse($this->validResponseFixtureName()),
                     ['Last-Modified' => (new \DateTimeImmutable())->format(\DateTimeInterface::RFC822)]
                 )
             );
@@ -197,15 +198,18 @@ abstract class BlizzardProfileApiTestCase extends TestCase {
         ));
     }
 
-    abstract protected function getApiNamespace(Region $region) : string;
+    abstract protected function apiNamespace(Region $region) : string;
 
-    abstract protected function getApiPath() : string;
+    abstract protected function apiPath() : string;
 
-    abstract protected function getExpectedUnableToFetchException() : string;
+    /**
+     * @return class-string<Throwable>
+     */
+    abstract protected function expectedUnableToFetchException() : string;
 
-    abstract protected function getExpectedUnableToFetchExceptionMessage() : string;
+    abstract protected function expectedUnableToFetchExceptionMessage() : string;
 
-    abstract protected function getValidResponseFixtureName() : string;
+    abstract protected function validResponseFixtureName() : string;
 
     abstract protected function executeApiCall(?RegionAndLocale $regionAndLocale) : object;
 

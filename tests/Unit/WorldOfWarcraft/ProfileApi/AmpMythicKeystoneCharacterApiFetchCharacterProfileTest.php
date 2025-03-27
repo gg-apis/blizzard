@@ -14,18 +14,18 @@ use GGApis\Blizzard\RegionAndLocale;
 use GGApis\Blizzard\Test\Helper\FixtureUtils;
 use GGApis\Blizzard\Test\Unit\WorldOfWarcraft\BlizzardProfileApiTestCase;
 use GGApis\Blizzard\WorldOfWarcraft\BlizzardNamespace;
-use GGApis\Blizzard\WorldOfWarcraft\Character;
-use GGApis\Blizzard\WorldOfWarcraft\Faction;
-use GGApis\Blizzard\WorldOfWarcraft\Gender;
 use GGApis\Blizzard\WorldOfWarcraft\Internal\AbstractBlizzardApi;
-use GGApis\Blizzard\WorldOfWarcraft\MythicKeystoneCharacterProfile;
-use GGApis\Blizzard\WorldOfWarcraft\MythicKeystoneRating;
-use GGApis\Blizzard\WorldOfWarcraft\PlayableClass;
+use GGApis\Blizzard\WorldOfWarcraft\MythicKeystone\AmpMythicKeystoneCharacterApi;
+use GGApis\Blizzard\WorldOfWarcraft\MythicKeystone\MythicKeystoneCharacterApi;
+use GGApis\Blizzard\WorldOfWarcraft\MythicKeystone\MythicKeystoneCharacterProfile;
+use GGApis\Blizzard\WorldOfWarcraft\MythicKeystone\MythicKeystoneRating;
 use GGApis\Blizzard\WorldOfWarcraft\PlayableRace;
-use GGApis\Blizzard\WorldOfWarcraft\ProfileApi\AmpMythicKeystoneCharacterApi;
-use GGApis\Blizzard\WorldOfWarcraft\ProfileApi\MythicKeystoneCharacterApi;
-use GGApis\Blizzard\WorldOfWarcraft\Realm;
 use GGApis\Blizzard\WorldOfWarcraft\RgbaColor;
+use GGApis\Blizzard\WorldOfWarcraft\UserProfile\Character;
+use GGApis\Blizzard\WorldOfWarcraft\UserProfile\Faction;
+use GGApis\Blizzard\WorldOfWarcraft\UserProfile\Gender;
+use GGApis\Blizzard\WorldOfWarcraft\UserProfile\PlayableClass;
+use GGApis\Blizzard\WorldOfWarcraft\UserProfile\Realm;
 use PHPUnit\Framework\Attributes\CoversClass;
 
 #[
@@ -68,23 +68,23 @@ class AmpMythicKeystoneCharacterApiFetchCharacterProfileTest extends BlizzardPro
         $this->character = FixtureUtils::adaxion();
     }
 
-    protected function getApiNamespace(Region $region) : string {
+    protected function apiNamespace(Region $region) : string {
         return sprintf('profile-%s', $region->getApiNamespace());
     }
 
-    protected function getApiPath() : string {
+    protected function apiPath() : string {
         return '/profile/wow/character/area-52/adaxion/mythic-keystone-profile';
     }
 
-    protected function getExpectedUnableToFetchException() : string {
+    protected function expectedUnableToFetchException() : string {
         return UnableToFetchMythicKeystoneCharacterProfile::class;
     }
 
-    protected function getExpectedUnableToFetchExceptionMessage() : string {
+    protected function expectedUnableToFetchExceptionMessage() : string {
         return 'Blizzard responded with an invalid status code (403) while fetching Mythic Keystone character profile.';
     }
 
-    protected function getValidResponseFixtureName() : string {
+    protected function validResponseFixtureName() : string {
         return 'fetch_mythic_keystone_character_profile';
     }
 
