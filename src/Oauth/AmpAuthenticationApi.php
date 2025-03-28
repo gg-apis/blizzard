@@ -5,11 +5,9 @@ namespace GGApis\Blizzard\Oauth;
 use Amp\Cache\Cache;
 use Amp\Http\Client\Form;
 use Amp\Http\Client\HttpClient;
-use Cspray\AnnotatedContainer\Attribute\Service;
 use Cspray\HttpRequestBuilder\RequestBuilder;
 use CuyZ\Valinor\Mapper\Source\JsonSource;
 use CuyZ\Valinor\Mapper\Source\Source;
-use CuyZ\Valinor\Mapper\TreeMapper;
 use GGApis\Blizzard\ApiConfig;
 use GGApis\Blizzard\Exception\InvalidAuthenticationState;
 use GGApis\Blizzard\Exception\UnableToAuthenticate;
@@ -17,13 +15,13 @@ use GGApis\Blizzard\Exception\UnableToFetchUser;
 use GGApis\Blizzard\Http\BasicAuthHeader;
 use GGApis\Blizzard\Http\BearerTokenHeader;
 use GGApis\Blizzard\WorldOfWarcraft\Internal\AbstractBlizzardApi;
+use GGApis\Blizzard\WorldOfWarcraft\Internal\BlizzardErrorMappingExceptionThrowingFetchErrorHandler;
 use IteratorAggregate;
 use League\Uri\Components\Query;
 use League\Uri\Http;
 use Psr\Http\Message\UriInterface;
 use Traversable;
 
-#[Service]
 final class AmpAuthenticationApi extends AbstractBlizzardApi implements AuthenticationApi {
 
     private readonly UriInterface $oauthUri;
@@ -32,17 +30,20 @@ final class AmpAuthenticationApi extends AbstractBlizzardApi implements Authenti
         HttpClient $client,
         ApiConfig $apiConfig,
         Cache $cache,
-        TreeMapper $mapper,
     ) {
-        parent::__construct($client, $apiConfig, $cache, $mapper);
-        $this->oauthUri = Http::createFromString('https://oauth.battle.net');
+        parent::__construct(
+            $client,
+            $apiConfig,
+            $cache,
+        );
+        $this->oauthUri = Http::new('https://oauth.battle.net');
     }
 
     public function createAuthorizeUri(string $state, array $scopes, UriInterface $redirectUri) : UriInterface {
         $scope = implode(' ', array_map(static fn(Scope $scope) => $scope->value, $scopes));
         return $this->oauthUri
             ->withPath('/authorize')
-            ->withQuery(Query::createFromParams([
+            ->withQuery(Query::fromVariable([
                 'client_id' => $this->config->getClientId(),
                 'scope' => $scope,
                 'state' => $state,
@@ -51,16 +52,21 @@ final class AmpAuthenticationApi extends AbstractBlizzardApi implements Authenti
             ])->toString());
     }
 
-    public function generateOauthAccessToken(AuthorizationParameters $authorizationParameters, AuthenticationStateValidator $stateValidator) : OauthAccessToken {
+    public function generateOauthAccessToken(
+        AuthorizationParameters $authorizationParameters,
+        AuthenticationStateValidator $stateValidator
+    ) : OauthAccessToken {
         if (!$stateValidator->isStateValid($authorizationParameters->state)) {
             throw InvalidAuthenticationState::fromInvalidStateCreatingAccessToken();
         }
         $stateValidator->markStateAsUsed($authorizationParameters->state);
 
         $request = RequestBuilder::withHeader(
-                'Authorization', BasicAuthHeader::fromUserInfo($this->config->getClientId(), $this->config->getClientSecret())->toString()
-            )->withFormBody($this->createFormFromAuthorizationParameters($authorizationParameters))
-            ->post($this->oauthUri->withPath('/token'));
+            'Authorization',
+            BasicAuthHeader::fromUserInfo($this->config->getClientId(), $this->config->getClientSecret())->toString()
+        )->withFormBody(
+            $this->createFormFromAuthorizationParameters($authorizationParameters)
+        )->post($this->oauthUri->withPath('/token'));
 
         $response = $this->client->request($request);
 
@@ -70,9 +76,13 @@ final class AmpAuthenticationApi extends AbstractBlizzardApi implements Authenti
         $body = $response->getBody()->buffer();
 
         $this->validateRateThrottlingNotActive($status, $body);
-        $this->validateIsSuccessfulResponse($status, $body, UnableToAuthenticate::fromInvalidResponseCode(...));
+        $this->validateIsSuccessfulResponse(
+            $status,
+            $body,
+            new BlizzardErrorMappingExceptionThrowingFetchErrorHandler(UnableToAuthenticate::fromInvalidResponseCode(...))
+        );
 
-        return $this->mapper->map(
+        return $this->simpleMapper()->map(
             OauthAccessToken::class,
             Source::iterable($this->getOauthAccessTokenSource($body))
                 ->map(['scope' => 'scopes'])
@@ -82,29 +92,32 @@ final class AmpAuthenticationApi extends AbstractBlizzardApi implements Authenti
 
     private function createFormFromAuthorizationParameters(AuthorizationParameters $authorizationParameters) : Form {
         $form = new Form();
-        $form->addText('redirect_uri', (string) $authorizationParameters->redirectUri);
-        $form->addText(
+        $form->addField('redirect_uri', (string) $authorizationParameters->redirectUri);
+        $form->addField(
             'scope',
             implode(' ', array_map(
                 static fn(Scope $scope) => $scope->value,
                 $authorizationParameters->scopes
             ))
         );
-        $form->addText('grant_type', $authorizationParameters->grantType);
-        $form->addText('code', $authorizationParameters->code);
+        $form->addField('grant_type', $authorizationParameters->grantType);
+        $form->addField('code', $authorizationParameters->code);
         return $form;
     }
 
     public function generateClientAccessToken() : ClientAccessToken {
         $form = new Form();
-        $form->addText('grant_type', 'client_credentials');
+        $form->addField('grant_type', 'client_credentials');
         $request = RequestBuilder::withHeader(
                 'Authorization', BasicAuthHeader::fromUserInfo($this->config->getClientId(), $this->config->getClientSecret())->toString()
             )->withFormBody($form)
             ->post($this->oauthUri->withPath('/token'));
         $response = $this->client->request($request);
 
-        return $this->mapper->map(ClientAccessToken::class, Source::json($response->getBody()->buffer())->camelCaseKeys());
+        return $this->simpleMapper()->map(
+            ClientAccessToken::class,
+            Source::json($response->getBody()->buffer())->camelCaseKeys()
+        );
     }
 
     private function getOauthAccessTokenSource(string $json) : IteratorAggregate {
@@ -154,9 +167,15 @@ final class AmpAuthenticationApi extends AbstractBlizzardApi implements Authenti
         $body = $response->getBody()->buffer();
 
         $this->validateRateThrottlingNotActive($status, $body);
-        $this->validateIsSuccessfulResponse($status, $body, UnableToFetchUser::fromBlizzardError(...));
+        $this->validateIsSuccessfulResponse(
+            $status,
+            $body,
+            new BlizzardErrorMappingExceptionThrowingFetchErrorHandler(
+                UnableToFetchUser::fromBlizzardError(...)
+            )
+        );
 
-        return $this->mapper->map(User::class, Source::json($body));
+        return $this->simpleMapper()->map(User::class, Source::json($body));
     }
 
 }

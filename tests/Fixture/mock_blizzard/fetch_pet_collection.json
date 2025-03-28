@@ -1,0 +1,152 @@
+{
+  "_links": {
+    "self": {
+      "href": "https://us.api.blizzard.com/profile/user/wow/collections/pets?namespace=profile-us"
+    },
+    "user": {
+      "href": "https://us.api.blizzard.com/profile/user"
+    },
+    "profile": {
+      "href": "https://us.api.blizzard.com/profile/user/wow?namespace=profile-us"
+    }
+  },
+  "pets": [
+    {
+      "species": {
+        "key": {
+          "href": "https://us.api.blizzard.com/data/wow/pet/202?namespace=static-11.1.0_59095-us"
+        },
+        "name": "Baby Blizzard Bear",
+        "id": 202
+      },
+      "level": 1,
+      "quality": {
+        "type": "UNCOMMON",
+        "name": "Uncommon"
+      },
+      "stats": {
+        "breed_id": 7,
+        "health": 153,
+        "power": 11,
+        "speed": 10
+      },
+      "creature_display": {
+        "key": {
+          "href": "https://us.api.blizzard.com/data/wow/media/creature-display/16189?namespace=static-11.1.0_59095-us"
+        },
+        "id": 16189
+      },
+      "id": 224719675
+    },
+    {
+      "species": {
+        "key": {
+          "href": "https://us.api.blizzard.com/data/wow/pet/52?namespace=static-11.1.0_59095-us"
+        },
+        "name": "Ancona Chicken",
+        "id": 52
+      },
+      "level": 1,
+      "quality": {
+        "type": "UNCOMMON",
+        "name": "Uncommon"
+      },
+      "stats": {
+        "breed_id": 13,
+        "health": 151,
+        "power": 10,
+        "speed": 10
+      },
+      "creature_display": {
+        "key": {
+          "href": "https://us.api.blizzard.com/data/wow/media/creature-display/5369?namespace=static-11.1.0_59095-us"
+        },
+        "id": 5369
+      },
+      "id": 224719676
+    },
+    {
+      "species": {
+        "key": {
+          "href": "https://us.api.blizzard.com/data/wow/pet/137?namespace=static-11.1.0_59095-us"
+        },
+        "name": "Brown Rabbit",
+        "id": 137
+      },
+      "level": 1,
+      "quality": {
+        "type": "UNCOMMON",
+        "name": "Uncommon"
+      },
+      "stats": {
+        "breed_id": 5,
+        "health": 148,
+        "power": 8,
+        "speed": 13
+      },
+      "creature_display": {
+        "key": {
+          "href": "https://us.api.blizzard.com/data/wow/media/creature-display/4626?namespace=static-11.1.0_59095-us"
+        },
+        "id": 4626
+      },
+      "id": 224719677
+    },
+    {
+      "species": {
+        "key": {
+          "href": "https://us.api.blizzard.com/data/wow/pet/145?namespace=static-11.1.0_59095-us"
+        },
+        "name": "Blue Dragonhawk Hatchling",
+        "id": 145
+      },
+      "level": 4,
+      "quality": {
+        "type": "UNCOMMON",
+        "name": "Uncommon"
+      },
+      "stats": {
+        "breed_id": 18,
+        "health": 304,
+        "power": 40,
+        "speed": 43
+      },
+      "creature_display": {
+        "key": {
+          "href": "https://us.api.blizzard.com/data/wow/media/creature-display/20029?namespace=static-11.1.0_59095-us"
+        },
+        "id": 20029
+      },
+      "id": 224719678
+    },
+    {
+      "species": {
+        "key": {
+          "href": "https://us.api.blizzard.com/data/wow/pet/59?namespace=static-11.1.0_59095-us"
+        },
+        "name": "Emerald Whelpling",
+        "id": 59
+      },
+      "level": 1,
+      "quality": {
+        "type": "RARE",
+        "name": "Rare"
+      },
+      "stats": {
+        "breed_id": 19,
+        "health": 161,
+        "power": 10,
+        "speed": 11
+      },
+      "name": "Emmagosa",
+      "creature_display": {
+        "key": {
+          "href": "https://us.api.blizzard.com/data/wow/media/creature-display/6291?namespace=static-11.1.0_59095-us"
+        },
+        "id": 6291
+      },
+      "id": 224719679
+    }
+  ],
+  "unlocked_battle_pet_slots": 3
+}

@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace GGApis\Blizzard\WorldOfWarcraft;
+namespace GGApis\Blizzard\WorldOfWarcraft\MythicKeystone;
 
-final class PlayableSpecialization {
+class MythicKeystoneDungeon {
 
     public function __construct(
         public readonly int $id,

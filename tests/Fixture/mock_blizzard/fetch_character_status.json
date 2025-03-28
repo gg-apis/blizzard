@@ -1,0 +1,9 @@
+{
+  "_links": {
+    "self": {
+      "href": "https://us.api.blizzard.com/profile/wow/character/area-52/adaxion/status?namespace=profile-us"
+    }
+  },
+  "id": 234345345,
+  "is_valid": true
+}
