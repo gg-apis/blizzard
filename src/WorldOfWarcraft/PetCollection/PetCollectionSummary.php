@@ -11,6 +11,16 @@ final class PetCollectionSummary implements Countable {
         public readonly array $pets
     ) {}
 
+    public function isPetCollected(string $name) : bool {
+        foreach ($this->pets as $pet) {
+            if ($name === $pet->species->name) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function count() : int {
         return count($this->pets);
     }
