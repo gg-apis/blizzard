@@ -2,11 +2,10 @@
 
 namespace GGApis\Blizzard\WorldOfWarcraft\MythicKeystone;
 
-use Cspray\AnnotatedContainer\Attribute\Service;
 use GGApis\Blizzard\Oauth\ClientAccessToken;
 use GGApis\Blizzard\RegionAndLocale;
+use GGApis\Blizzard\WorldOfWarcraft\CharacterIdentifier;
 
-#[Service]
 interface MythicKeystoneCharacterApi {
 
     public function fetchMythicKeystoneCharacterProfile(

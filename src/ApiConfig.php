@@ -2,10 +2,6 @@
 
 namespace GGApis\Blizzard;
 
-use Cspray\AnnotatedContainer\Attribute\Service;
-use Psr\Http\Message\UriInterface;
-
-#[Service]
 interface ApiConfig {
 
     public function getClientId() : string;

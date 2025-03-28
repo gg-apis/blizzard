@@ -2,7 +2,7 @@
 
 namespace GGApis\Blizzard\WorldOfWarcraft\UserProfile;
 
-use GGApis\Blizzard\WorldOfWarcraft\MythicKeystone\CharacterIdentifier;
+use GGApis\Blizzard\WorldOfWarcraft\CharacterIdentifier;
 use GGApis\Blizzard\WorldOfWarcraft\PlayableRace;
 
 final class Character implements CharacterIdentifier {

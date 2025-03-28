@@ -2,6 +2,8 @@
 
 namespace GGApis\Blizzard\WorldOfWarcraft\MythicKeystone;
 
+use GGApis\Blizzard\WorldOfWarcraft\CharacterIdentifier;
+
 final class MythicKeystoneCharacterProfile {
 
     public function __construct(

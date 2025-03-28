@@ -1,18 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace GGApis\Blizzard\Test\Unit\WorldOfWarcraft\ProfileApi;
+namespace GGApis\Blizzard\Test\Unit\WorldOfWarcraft\CharacterProfile;
 
-use Amp\Cache\Cache;
-use Amp\Cache\LocalCache;
-use Amp\Http\Client\HttpClient;
-use Amp\Http\Client\HttpClientBuilder;
-use Amp\Http\Client\Request;
 use Amp\Http\HttpStatus;
 use Cspray\HttpClientTestInterceptor\HttpMockAwareTestTrait;
-use Cspray\HttpRequestBuilder\RequestBuilder;
-use CuyZ\Valinor\Mapper\TreeMapper;
-use CuyZ\Valinor\MapperBuilder;
-use GGApis\Blizzard\ApiConfig;
 use GGApis\Blizzard\BlizzardError;
 use GGApis\Blizzard\Exception\Exception;
 use GGApis\Blizzard\Exception\InvalidContentType;
@@ -21,10 +12,10 @@ use GGApis\Blizzard\Exception\UnableToFetchCharacterStatus;
 use GGApis\Blizzard\Http\BearerTokenHeader;
 use GGApis\Blizzard\Oauth\ClientAccessToken;
 use GGApis\Blizzard\Region;
+use GGApis\Blizzard\RegionAndLocale;
 use GGApis\Blizzard\Test\Helper\FixtureUtils;
-use GGApis\Blizzard\Test\Helper\MockApiConfig;
 use GGApis\Blizzard\Test\Helper\MockBlizzardResponseBuilder;
-use GGApis\Blizzard\Test\Helper\UriUtils;
+use GGApis\Blizzard\Test\Unit\WorldOfWarcraft\BlizzardProfileApiTestCase;
 use GGApis\Blizzard\WorldOfWarcraft\BlizzardNamespace;
 use GGApis\Blizzard\WorldOfWarcraft\CharacterProfile\AmpCharacterProfileApi;
 use GGApis\Blizzard\WorldOfWarcraft\CharacterProfile\CharacterStatus;
@@ -36,7 +27,6 @@ use GGApis\Blizzard\WorldOfWarcraft\UserProfile\Gender;
 use GGApis\Blizzard\WorldOfWarcraft\UserProfile\PlayableClass;
 use GGApis\Blizzard\WorldOfWarcraft\UserProfile\Realm;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\TestCase;
 
 #[
     CoversClass(AmpCharacterProfileApi::class),
@@ -57,41 +47,17 @@ use PHPUnit\Framework\TestCase;
     CoversClass(RateThrottled::class),
     CoversClass(UnableToFetchCharacterStatus::class),
 ]
-class AmpCharacterProfileApiCharacterStatusTest extends TestCase {
+class AmpCharacterProfileApiCharacterStatusTest extends BlizzardProfileApiTestCase {
 
     use HttpMockAwareTestTrait;
-
-    private HttpClient $client;
-    private ApiConfig $config;
-    private Cache $cache;
-    private TreeMapper $mapper;
     private AmpCharacterProfileApi $subject;
 
     protected function setUp() : void {
-        $this->client = (new HttpClientBuilder())->intercept($this->getMockingInterceptor())->build();
-        $this->config = new MockApiConfig();
-        $this->cache = new LocalCache();
-        $this->mapper = (new MapperBuilder())->allowSuperfluousKeys()->mapper();
+        parent::setUp();
         $this->subject = new AmpCharacterProfileApi(
             $this->client,
             $this->config,
             $this->cache,
-            $this->mapper
-        );
-    }
-
-    protected function assertPostConditions() : void {
-        $this->validateHttpMocks();
-    }
-
-    private function request(Region $region = null) : Request {
-        $region ??= $this->config->getDefaultRegion();
-        return RequestBuilder::withHeaders([
-            'Authorization' => 'Bearer access-token',
-            'Battlenet-Namespace' => BlizzardNamespace::Profile->toString($region),
-        ])->get(
-            UriUtils::apiUriForRegion($region)
-                ->withPath('/profile/wow/character/area-52/adaxion/status')
         );
     }
 
@@ -108,7 +74,7 @@ class AmpCharacterProfileApiCharacterStatusTest extends TestCase {
             );
 
         $status = $this->subject->fetchCharacterStatus(
-            new ClientAccessToken('access-token', 'bearer', 5000, 'sub-string'),
+            $this->clientAccessToken(),
             FixtureUtils::adaxion()
         );
 
@@ -132,7 +98,7 @@ class AmpCharacterProfileApiCharacterStatusTest extends TestCase {
             );
 
         $status = $this->subject->fetchCharacterStatus(
-            new ClientAccessToken('access-token', 'bearer', 5000, 'sub-string'),
+            $this->clientAccessToken(),
             FixtureUtils::adaxion()
         );
 
@@ -156,7 +122,7 @@ class AmpCharacterProfileApiCharacterStatusTest extends TestCase {
             );
 
         $status = $this->subject->fetchCharacterStatus(
-            new ClientAccessToken('access-token', 'bearer', 5000, 'sub-string'),
+            $this->clientAccessToken(),
             FixtureUtils::adaxion()
         );
 
@@ -180,71 +146,42 @@ class AmpCharacterProfileApiCharacterStatusTest extends TestCase {
             );
 
         $status = $this->subject->fetchCharacterStatus(
-            new ClientAccessToken('access-token', 'bearer', 5000, 'sub-string'),
+            $this->clientAccessToken(),
             FixtureUtils::adaxion()
         );
 
         self::assertSame(CharacterStatus::IdMismatch, $status);
     }
 
-    public function testCharacterStatusDoesNotReturnJsonThrowsException() : void {
-        $this->httpMock()->onRequest($request = $this->request())->returnResponse(
-            MockBlizzardResponseBuilder::fromNotJsonResponse($request)
-        );
+    protected function apiNamespace(Region $region) : string {
+        return sprintf('profile-%s', $region->getApiNamespace());
+    }
 
-        $this->expectException(InvalidContentType::class);
-        $this->expectExceptionMessage('Expected Content-Type of "application/json" but received "text/plain".');
+    protected function apiPath() : string {
+        return '/profile/wow/character/area-52/adaxion/status';
+    }
 
-        $this->subject->fetchCharacterStatus(
-            new ClientAccessToken('access-token', 'bearer', 5000, 'sub-string'),
-            FixtureUtils::adaxion()
+    protected function expectedUnableToFetchException() : string {
+        return UnableToFetchCharacterStatus::class;
+    }
+
+    protected function expectedUnableToFetchExceptionMessage() : string {
+        return 'Blizzard responded with an invalid status code (403) while fetching Character status.';
+    }
+
+    protected function validResponseFixtureName() : string {
+        return 'fetch_character_status';
+    }
+
+    protected function executeApiCall(?RegionAndLocale $regionAndLocale) : object {
+        return $this->subject->fetchCharacterStatus(
+            $this->clientAccessToken(),
+            FixtureUtils::adaxion(),
+            $regionAndLocale
         );
     }
 
-    public function testCharacterStatusWithRateThrottledRequestThrowsException() : void {
-        $this->httpMock()
-            ->onRequest(
-                $request = $this->request()
-            )->returnResponse(
-                MockBlizzardResponseBuilder::fromJsonResponse($request, HttpStatus::TOO_MANY_REQUESTS, [
-                    'code' => HttpStatus::TOO_MANY_REQUESTS,
-                    'type' => 'BLZWEBAPI00000429',
-                    'detail' => 'Too Many Requests'
-                ])
-            );
-
-        $this->expectException(RateThrottled::class);
-        $this->expectExceptionMessage(
-            'Blizzard has throttled requests. Please wait before additional requests are made.'
-        );
-
-        $this->subject->fetchCharacterStatus(
-            new ClientAccessToken('access-token', 'bearer', 5000, 'sub-string'),
-            FixtureUtils::adaxion()
-        );
+    protected function assertResourceIsValid(object $resource) : void {
+        self::assertInstanceOf(CharacterStatus::class, $resource);
     }
-
-    public function testCharacterStatusWithInvalidStatusCodeThrowsException() : void {
-        $this->httpMock()
-            ->onRequest(
-                $request = $this->request()
-            )->returnResponse(
-                MockBlizzardResponseBuilder::fromJsonResponse($request, HttpStatus::FORBIDDEN, [
-                    'code' => HttpStatus::FORBIDDEN,
-                    'type' => 'BLZWEBAPI00000403',
-                    'detail' => 'Forbidden'
-                ])
-            );
-
-        $this->expectException(UnableToFetchCharacterStatus::class);
-        $this->expectExceptionMessage(
-            'Blizzard responded with an invalid status code (403) while fetching Character status.',
-        );
-
-        $this->subject->fetchCharacterStatus(
-            new ClientAccessToken('access-token', 'bearer', 5000, 'sub-string'),
-            FixtureUtils::adaxion()
-        );
-    }
-
 }

@@ -7,6 +7,6 @@ use GGApis\Blizzard\RegionAndLocale;
 
 interface PetCollectionApi {
 
-    public function fetchPetCollectionSummary(OauthAccessToken $accessToken, RegionAndLocale $regionAndLocale = null);
+    public function fetchPetCollectionSummary(OauthAccessToken $accessToken, RegionAndLocale $regionAndLocale = null) : PetCollectionSummary;
 
 }

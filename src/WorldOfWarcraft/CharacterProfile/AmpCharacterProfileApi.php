@@ -3,55 +3,67 @@
 namespace GGApis\Blizzard\WorldOfWarcraft\CharacterProfile;
 
 use Amp\Http\HttpStatus;
-use Cspray\AnnotatedContainer\Attribute\Service;
-use Cspray\HttpRequestBuilder\RequestBuilder;
 use GGApis\Blizzard\Exception\UnableToFetchCharacterStatus;
-use GGApis\Blizzard\Http\BearerTokenHeader;
 use GGApis\Blizzard\Oauth\ClientAccessToken;
-use GGApis\Blizzard\Region;
+use GGApis\Blizzard\RegionAndLocale;
 use GGApis\Blizzard\WorldOfWarcraft\BlizzardNamespace;
 use GGApis\Blizzard\WorldOfWarcraft\Internal\AbstractBlizzardApi;
+use GGApis\Blizzard\WorldOfWarcraft\Internal\BlizzardErrorMappingExceptionThrowingFetchErrorHandler;
+use GGApis\Blizzard\WorldOfWarcraft\Internal\FetchErrorHandler;
+use GGApis\Blizzard\WorldOfWarcraft\Internal\JsonDecodingHydrator;
 use GGApis\Blizzard\WorldOfWarcraft\UserProfile\Character;
 
-#[Service]
 class AmpCharacterProfileApi extends AbstractBlizzardApi  implements CharacterProfileApi {
 
-    public function fetchCharacterStatus(ClientAccessToken $token, Character $character, Region $region = null) : CharacterStatus {
-        $request = RequestBuilder::withHeaders([
-            'Authorization' => BearerTokenHeader::fromToken($token->accessToken)->toString(),
-            'Battlenet-Namespace' => BlizzardNamespace::Profile->toString($region ?? $this->config->getDefaultRegion())
-        ])->get(
-            $this->apiUriForRegion($region ?? $this->config->getDefaultRegion())
-                ->withPath(sprintf(
-                    '/profile/wow/character/%s/%s/status',
-                    $character->realm->slug,
-                    strtolower($character->name)
-                ))
+    public function fetchCharacterStatus(ClientAccessToken $token, Character $character, RegionAndLocale $regionAndLocale = null) : CharacterStatus {
+        $path = sprintf(
+            '/profile/wow/character/%s/%s/status',
+            $character->realm->slug,
+            strtolower($character->name)
         );
-        $response = $this->client->request($request);
 
-        if ($response->getStatus() === HttpStatus::NOT_FOUND) {
-            return CharacterStatus::NotFound;
+        $characterStatus = $this->processFetchResourceRequest(
+            $token,
+            $path,
+            BlizzardNamespace::Profile,
+            new JsonDecodingHydrator(),
+            $this->checkForNotFoundStatusFetchErrorHandler(),
+            $regionAndLocale
+        );
+
+        if ($characterStatus instanceof CharacterStatus) {
+            return $characterStatus;
         }
 
-        $this->validateContentTypeIsJson($response);
-
-        $body = $response->getBody()->buffer();
-
-        $this->validateRateThrottlingNotActive($response->getStatus(), $body);
-        $this->validateIsSuccessfulResponse($response->getStatus(), $body, UnableToFetchCharacterStatus::fromBlizzardError(...));
-
-        $characterStatus = json_decode($body, true, flags: JSON_THROW_ON_ERROR);
-
-        if (!$characterStatus['is_valid']) {
+        if (!$characterStatus->is_valid) {
             return CharacterStatus::Invalid;
         }
 
-        if ($characterStatus['id'] !== $character->id) {
+        if ($characterStatus->id !== $character->id) {
             return CharacterStatus::IdMismatch;
         }
 
         return CharacterStatus::Valid;
+    }
+
+    private function checkForNotFoundStatusFetchErrorHandler() : FetchErrorHandler {
+        $errorHandler = new BlizzardErrorMappingExceptionThrowingFetchErrorHandler(
+            UnableToFetchCharacterStatus::fromBlizzardError(...)
+        );
+        return new class($errorHandler) implements FetchErrorHandler {
+
+            public function __construct(
+                private readonly FetchErrorHandler $fetchErrorHandler,
+            ) {}
+
+            public function handle(int $status, string $responseBody) : ?object {
+                if ($status === HttpStatus::NOT_FOUND) {
+                    return CharacterStatus::NotFound;
+                }
+
+                return $this->fetchErrorHandler->handle($status, $responseBody);
+            }
+        };
     }
 
 }

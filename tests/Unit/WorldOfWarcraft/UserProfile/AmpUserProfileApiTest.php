@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace GGApis\Blizzard\Test\Unit\WorldOfWarcraft\ProfileApi;
+namespace GGApis\Blizzard\Test\Unit\WorldOfWarcraft\UserProfile;
 
 use GGApis\Blizzard\BlizzardError;
 use GGApis\Blizzard\Exception\Exception;
@@ -58,7 +58,6 @@ class AmpUserProfileApiTest extends BlizzardProfileApiTestCase {
             $this->client,
             $this->config,
             $this->cache,
-            $this->mapper
         );
     }
 

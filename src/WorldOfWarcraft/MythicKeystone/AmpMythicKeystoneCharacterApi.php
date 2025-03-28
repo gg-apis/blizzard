@@ -2,7 +2,6 @@
 
 namespace GGApis\Blizzard\WorldOfWarcraft\MythicKeystone;
 
-use Cspray\AnnotatedContainer\Attribute\Service;
 use CuyZ\Valinor\Mapper\Source\JsonSource;
 use CuyZ\Valinor\Mapper\Source\Source;
 use GGApis\Blizzard\Exception\UnableToFetchMythicKeystoneCharacterProfile;
@@ -10,11 +9,12 @@ use GGApis\Blizzard\Exception\UnableToFetchMythicKeystoneCharacterSeasonDetails;
 use GGApis\Blizzard\Oauth\ClientAccessToken;
 use GGApis\Blizzard\RegionAndLocale;
 use GGApis\Blizzard\WorldOfWarcraft\BlizzardNamespace;
+use GGApis\Blizzard\WorldOfWarcraft\CharacterIdentifier;
 use GGApis\Blizzard\WorldOfWarcraft\Internal\AbstractBlizzardApi;
-use IteratorAggregate;
-use Traversable;
+use GGApis\Blizzard\WorldOfWarcraft\Internal\BlizzardErrorMappingExceptionThrowingFetchErrorHandler;
+use GGApis\Blizzard\WorldOfWarcraft\Internal\ValinorMappingHydrator;
+use GGApis\Blizzard\WorldOfWarcraft\Internal\ValinorSourceProvider;
 
-#[Service]
 class AmpMythicKeystoneCharacterApi extends AbstractBlizzardApi implements MythicKeystoneCharacterApi {
 
     public function fetchMythicKeystoneCharacterProfile(
@@ -32,8 +32,14 @@ class AmpMythicKeystoneCharacterApi extends AbstractBlizzardApi implements Mythi
             $token,
             $path,
             BlizzardNamespace::Profile,
-            fn(string $body) => $this->hydrateCharacterProfile($character, $body),
-            UnableToFetchMythicKeystoneCharacterProfile::fromBlizzardError(...),
+            new ValinorMappingHydrator(
+                $this->simpleMapper(),
+                $this->characterProfileSourceProvider($character),
+                MythicKeystoneCharacterProfile::class,
+            ),
+            new BlizzardErrorMappingExceptionThrowingFetchErrorHandler(
+                UnableToFetchMythicKeystoneCharacterProfile::fromBlizzardError(...)
+            ),
             $regionAndLocale
         );
 
@@ -41,44 +47,32 @@ class AmpMythicKeystoneCharacterApi extends AbstractBlizzardApi implements Mythi
         return $resource;
     }
 
-    private function hydrateCharacterProfile(CharacterIdentifier $character, string $body) : MythicKeystoneCharacterProfile {
-        return $this->mapper->map(
-            MythicKeystoneCharacterProfile::class,
-            Source::iterable(
-                $this->getMythicKeystoneCharacterProfileSource(
-                    $character,
-                    $body
-                )
-            )->map([
-                'current_mythic_rating' => 'rating',
-            ])->camelCaseKeys()
-        );
-    }
-
-    private function getMythicKeystoneCharacterProfileSource(CharacterIdentifier $character, string $json) : IteratorAggregate {
-        return new class($character, new JsonSource($json)) implements IteratorAggregate {
-
-            private readonly iterable $source;
+    private function characterProfileSourceProvider(CharacterIdentifier $character) : ValinorSourceProvider {
+        return new class($character) implements ValinorSourceProvider {
 
             public function __construct(
-                private readonly CharacterIdentifier $character,
-                private readonly JsonSource $json
-            ) {
-                $this->source = $this->transformSource($this->json);
+                private readonly CharacterIdentifier $character
+            ) {}
+
+            public function source(string $body) : Source {
+                return Source::iterable($this->transformedSource($body))
+                    ->map(['current_mythic_rating' => 'rating'])
+                    ->camelCaseKeys();
             }
 
-            private function transformSource(JsonSource $source) : iterable {
+            private function transformedSource(string $body) : array {
+                $source = new JsonSource($body);
                 $return = [];
                 $rawSource = iterator_to_array($source);
                 foreach ($rawSource as $key => $val) {
                     if ($key === 'current_period') {
-                        $return['currentPeriodId'] = $rawSource[$key]['period']['id'];
+                        $return['currentPeriodId'] = $val['period']['id'];
                         continue;
                     }
 
                     if ($key === 'seasons') {
                         $seasonIds = [];
-                        foreach ($rawSource[$key] as $season) {
+                        foreach ($val as $season) {
                             $seasonIds[] = $season['id'];
                         }
                         $return['seasonIds'] = $seasonIds;
@@ -102,10 +96,6 @@ class AmpMythicKeystoneCharacterApi extends AbstractBlizzardApi implements Mythi
 
                 return $return;
             }
-
-            public function getIterator() : Traversable {
-                yield from $this->source;
-            }
         };
     }
 
@@ -125,8 +115,14 @@ class AmpMythicKeystoneCharacterApi extends AbstractBlizzardApi implements Mythi
             $token,
             $path,
             BlizzardNamespace::Profile,
-            fn(string $body) => $this->hydrateCharacterSeasonDetails($character, $body),
-            UnableToFetchMythicKeystoneCharacterSeasonDetails::fromBlizzardError(...),
+            new ValinorMappingHydrator(
+                $this->simpleMapper(),
+                $this->characterSeasonDetailsSourceProvider($character),
+                MythicKeystoneCharacterSeasonDetails::class
+            ),
+            new BlizzardErrorMappingExceptionThrowingFetchErrorHandler(
+                UnableToFetchMythicKeystoneCharacterSeasonDetails::fromBlizzardError(...)
+            ),
             $regionAndLocale
         );
 
@@ -134,33 +130,25 @@ class AmpMythicKeystoneCharacterApi extends AbstractBlizzardApi implements Mythi
         return $resource;
     }
 
-    private function hydrateCharacterSeasonDetails(CharacterIdentifier $character, string $body) : MythicKeystoneCharacterSeasonDetails {
-        return $this->mapper->map(
-            MythicKeystoneCharacterSeasonDetails::class,
-            Source::iterable(
-                $this->getMythicKeystoneCharacterSeasonDetailsSource($character, $body)
-            )->map([
-                'mythic_rating' => 'rating' ,
-                'best_runs.*.completed_timestamp' => 'completedAt',
-                'best_runs.*.keystone_affixes' => 'affixes',
-                'best_runs.*.mythic_rating' => 'rating'
-            ])->camelCaseKeys()
-        );
-    }
-
-    private function getMythicKeystoneCharacterSeasonDetailsSource(CharacterIdentifier $character, string $body) : IteratorAggregate {
-        return new class($character, new JsonSource($body)) implements IteratorAggregate {
-
-            private readonly iterable $source;
-
+    private function characterSeasonDetailsSourceProvider(CharacterIdentifier $character) : ValinorSourceProvider {
+        return new class($character) implements ValinorSourceProvider {
             public function __construct(
                 private readonly CharacterIdentifier $character,
-                JsonSource $source
-            ) {
-                $this->source = $this->transformSource($source);
+            ) {}
+
+            public function source(string $body) : Source {
+                return Source::iterable(
+                    $this->transformedSource($body)
+                )->map([
+                    'mythic_rating' => 'rating' ,
+                    'best_runs.*.completed_timestamp' => 'completedAt',
+                    'best_runs.*.keystone_affixes' => 'affixes',
+                    'best_runs.*.mythic_rating' => 'rating'
+                ])->camelCaseKeys();
             }
 
-            private function transformSource(JsonSource $source) : iterable {
+            private function transformedSource(string $body) : array {
+                $source = new JsonSource($body);
                 $return = [];
                 $rawSource = iterator_to_array($source);
                 foreach ($source as $key => $val) {
@@ -224,10 +212,6 @@ class AmpMythicKeystoneCharacterApi extends AbstractBlizzardApi implements Mythi
                     $processedMembers[] = $processingMember;
                 }
                 return $processedMembers;
-            }
-
-            public function getIterator() : Traversable {
-                yield from $this->source;
             }
         };
     }

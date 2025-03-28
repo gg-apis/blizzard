@@ -2,14 +2,12 @@
 
 namespace GGApis\Blizzard\WorldOfWarcraft\CharacterProfile;
 
-use Cspray\AnnotatedContainer\Attribute\Service;
 use GGApis\Blizzard\Oauth\ClientAccessToken;
-use GGApis\Blizzard\Region;
+use GGApis\Blizzard\RegionAndLocale;
 use GGApis\Blizzard\WorldOfWarcraft\UserProfile\Character;
 
-#[Service]
 interface CharacterProfileApi {
 
-    public function fetchCharacterStatus(ClientAccessToken $token, Character $character, Region $region = null) : CharacterStatus;
+    public function fetchCharacterStatus(ClientAccessToken $token, Character $character, RegionAndLocale $regionAndLocale = null) : CharacterStatus;
 
 }

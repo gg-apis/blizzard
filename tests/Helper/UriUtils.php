@@ -21,7 +21,7 @@ class UriUtils {
 
     public static function uriWithLocale(UriInterface $uri, Locale $locale) : UriInterface {
         return $uri->withQuery(
-            Query::createFromParams(['locale' => $locale->value])
+            Query::fromVariable(['locale' => $locale->value])->toString()
         );
     }
 

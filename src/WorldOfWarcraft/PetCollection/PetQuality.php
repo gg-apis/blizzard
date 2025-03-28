@@ -2,9 +2,9 @@
 
 namespace GGApis\Blizzard\WorldOfWarcraft\PetCollection;
 
-enum PetQuality : string {
-    case Poor = "POOR";
-    case Common = "COMMON";
-    case Uncommon = "UNCOMMON";
-    case Rare = "RARE";
+class PetQuality {
+    public function __construct(
+        public readonly string $type,
+        public readonly string $name,
+    ) {}
 }

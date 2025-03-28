@@ -10,7 +10,6 @@ final class Pet {
         public readonly PetSpecies $species,
         public readonly PetQuality $quality,
         public readonly PetStats $stats,
-        public readonly PetCreatureDisplay $creatureDisplay
     ) {
     }
 

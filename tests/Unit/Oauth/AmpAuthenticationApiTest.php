@@ -84,10 +84,10 @@ class AmpAuthenticationApiTest extends TestCase {
 
     private function getAccessTokenRequest() : Request {
         $form = new Form();
-        $form->addText('redirect_uri', 'http://localhost/example/redirect');
-        $form->addText('scope', 'openid wow.profile');
-        $form->addText('grant_type', 'authorization_code');
-        $form->addText('code', 'known-code');
+        $form->addField('redirect_uri', 'http://localhost/example/redirect');
+        $form->addField('scope', 'openid wow.profile');
+        $form->addField('grant_type', 'authorization_code');
+        $form->addField('code', 'known-code');
         return RequestBuilder::withFormBody($form)
             ->addHeaders([
                 'Authorization' => 'Basic ' . base64_encode('known-client-id:known-client-secret')
@@ -381,7 +381,7 @@ TEXT;
 
     public function testGetClientAccessTokenValidClientIdAndSecretReturnsAccessToken() : void {
         $form = new Form();
-        $form->addText('grant_type', 'client_credentials');
+        $form->addField('grant_type', 'client_credentials');
 
         $this->httpMock()
             ->onRequest(

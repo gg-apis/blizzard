@@ -4,9 +4,14 @@ namespace GGApis\Blizzard\WorldOfWarcraft\PetCollection;
 
 use Countable;
 
-interface PetCollectionSummary extends Countable {
-    /**
-     * @return list<Pet>
-     */
-    public function pets() : array;
+final class PetCollectionSummary implements Countable {
+
+    public function __construct(
+        /** @var list<Pet> $pets */
+        public readonly array $pets
+    ) {}
+
+    public function count() : int {
+        return count($this->pets);
+    }
 }

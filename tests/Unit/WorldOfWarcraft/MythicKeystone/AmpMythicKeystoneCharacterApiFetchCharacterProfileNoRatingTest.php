@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace GGApis\Blizzard\Test\Unit\WorldOfWarcraft\ProfileApi;
+namespace GGApis\Blizzard\Test\Unit\WorldOfWarcraft\MythicKeystone;
 
 use GGApis\Blizzard\BlizzardError;
 use GGApis\Blizzard\Exception\Exception;
@@ -63,7 +63,6 @@ class AmpMythicKeystoneCharacterApiFetchCharacterProfileNoRatingTest extends Bli
             $this->client,
             $this->config,
             $this->cache,
-            $this->mapper
         );
         $this->character = FixtureUtils::adaxion();
     }
@@ -90,7 +89,7 @@ class AmpMythicKeystoneCharacterApiFetchCharacterProfileNoRatingTest extends Bli
 
     protected function executeApiCall(?RegionAndLocale $regionAndLocale) : object {
         return $this->subject->fetchMythicKeystoneCharacterProfile(
-            new ClientAccessToken('access-token', 'bearer', 5000, 'sub-string'),
+            $this->clientAccessToken(),
             $this->character,
             $regionAndLocale
         );

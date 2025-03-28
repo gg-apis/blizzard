@@ -2,15 +2,16 @@
 
 namespace GGApis\Blizzard\WorldOfWarcraft\UserProfile;
 
-use Cspray\AnnotatedContainer\Attribute\Service;
-use CuyZ\Valinor\Mapper\Source\Source;
 use GGApis\Blizzard\Exception\UnableToFetchWorldOfWarcraftUserProfile;
 use GGApis\Blizzard\Oauth\OauthAccessToken;
 use GGApis\Blizzard\RegionAndLocale;
 use GGApis\Blizzard\WorldOfWarcraft\BlizzardNamespace;
 use GGApis\Blizzard\WorldOfWarcraft\Internal\AbstractBlizzardApi;
+use GGApis\Blizzard\WorldOfWarcraft\Internal\BlizzardErrorMappingExceptionThrowingFetchErrorHandler;
+use GGApis\Blizzard\WorldOfWarcraft\Internal\ValinorJsonMappingSourceProvider;
+use GGApis\Blizzard\WorldOfWarcraft\Internal\ValinorMappingHydrator;
+use GGApis\Blizzard\WorldOfWarcraft\Internal\ValinorSourceProvider;
 
-#[Service]
 final class AmpUserProfileApi extends AbstractBlizzardApi implements UserProfileApi {
 
     public function fetchUserProfile(OauthAccessToken $token, RegionAndLocale $regionAndLocale = null) : UserProfile {
@@ -18,8 +19,14 @@ final class AmpUserProfileApi extends AbstractBlizzardApi implements UserProfile
             $token,
             '/profile/user/wow',
             BlizzardNamespace::Profile,
-            $this->hydrateUserProfile(...),
-            UnableToFetchWorldOfWarcraftUserProfile::fromBlizzardError(...),
+            new ValinorMappingHydrator(
+                $this->simpleMapper(),
+                $this->sourceProvider(),
+                UserProfile::class,
+            ),
+            new BlizzardErrorMappingExceptionThrowingFetchErrorHandler(
+                UnableToFetchWorldOfWarcraftUserProfile::fromBlizzardError(...)
+            ),
             $regionAndLocale
         );
 
@@ -28,14 +35,12 @@ final class AmpUserProfileApi extends AbstractBlizzardApi implements UserProfile
         return $resource;
     }
 
-    private function hydrateUserProfile(string $body) : UserProfile {
-        $source = Source::json($body)
-            ->map([
-                'wow_accounts' => 'accounts',
-                'wow_accounts.*.characters.*.playable_race' => 'race',
-                'wow_accounts.*.characters.*.playable_class' => 'class'
-            ])->camelCaseKeys();
-        return $this->mapper->map(UserProfile::class, $source);
+    private function sourceProvider() : ValinorSourceProvider {
+        return new ValinorJsonMappingSourceProvider([
+            'wow_accounts' => 'accounts',
+            'wow_accounts.*.characters.*.playable_race' => 'race',
+            'wow_accounts.*.characters.*.playable_class' => 'class'
+        ]);
     }
 
 }

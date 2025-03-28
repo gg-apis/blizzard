@@ -2,6 +2,8 @@
 
 namespace GGApis\Blizzard\WorldOfWarcraft\MythicKeystone;
 
+use GGApis\Blizzard\WorldOfWarcraft\CharacterIdentifier;
+
 class MythicKeystoneCharacterSeasonDetails {
 
     public function __construct(

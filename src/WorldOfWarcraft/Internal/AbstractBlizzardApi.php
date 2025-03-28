@@ -6,10 +6,9 @@ use Amp\Cache\Cache;
 use Amp\Http\Client\HttpClient;
 use Amp\Http\Client\Response;
 use Amp\Http\HttpStatus;
-use Closure;
 use Cspray\HttpRequestBuilder\RequestBuilder;
-use CuyZ\Valinor\Mapper\Source\Source;
 use CuyZ\Valinor\Mapper\TreeMapper;
+use CuyZ\Valinor\MapperBuilder;
 use GGApis\Blizzard\ApiConfig;
 use GGApis\Blizzard\BlizzardError;
 use GGApis\Blizzard\Exception\InvalidContentType;
@@ -27,19 +26,19 @@ use Psr\Http\Message\UriInterface;
 
 abstract class AbstractBlizzardApi {
 
+
     public function __construct(
         protected readonly HttpClient $client,
         protected readonly ApiConfig $config,
         protected readonly Cache $cache,
-        protected readonly TreeMapper $mapper
     ) {}
 
     protected function processFetchResourceRequest(
         ClientAccessToken|OauthAccessToken $token,
         string $path,
         BlizzardNamespace $namespace,
-        Closure $hydrator,
-        Closure $unableToFetchExceptionProvider,
+        ResourceHydrator $hydrator,
+        FetchErrorHandler $fetchErrorHandler,
         RegionAndLocale $regionAndLocale = null
     ) : object {
         $region = $this->getRegion($regionAndLocale);
@@ -48,14 +47,14 @@ abstract class AbstractBlizzardApi {
         $uri = $this->apiUriForRegion($region)
             ->withPath($path)
             ->withQuery(
-                Query::createFromParams(['locale' => $locale->value])
+                Query::fromVariable(['locale' => $locale->value])->toString()
             );
 
         $headers = [
             'Authorization' => BearerTokenHeader::fromToken($token->accessToken)->toString(),
             'Battlenet-Namespace' => $namespace->toString($region)
         ];
-        $cacheKey = md5((string) $uri);
+        $cacheKey = md5($uri . $token->accessToken);
         $entry = $this->cache->get($cacheKey);
         if ($entry !== null) {
             $headers['If-Modified-Since'] = $entry['lastModified'];
@@ -64,7 +63,7 @@ abstract class AbstractBlizzardApi {
         $response = $this->client->request(RequestBuilder::withHeaders($headers)->get($uri));
 
         if ($response->getStatus() === HttpStatus::NOT_MODIFIED) {
-            return $hydrator($entry['content']);
+            return $hydrator->hydrate($entry['content']);
         }
 
         $this->validateContentTypeIsJson($response);
@@ -73,14 +72,17 @@ abstract class AbstractBlizzardApi {
         $body = $response->getBody()->buffer();
 
         $this->validateRateThrottlingNotActive($status, $body);
-        $this->validateIsSuccessfulResponse($status, $body, $unableToFetchExceptionProvider);
+        $errorResponse = $this->validateIsSuccessfulResponse($status, $body, $fetchErrorHandler);
+        if ($errorResponse !== null) {
+            return $errorResponse;
+        }
 
         $this->cache->set($cacheKey, [
             'lastModified' => $response->getHeader('Last-Modified'),
             'content' => $body
         ]);
 
-        return $hydrator($body);
+        return $hydrator->hydrate($body);
     }
 
     final protected function validateContentTypeIsJson(Response $response) : void {
@@ -92,17 +94,20 @@ abstract class AbstractBlizzardApi {
 
     final protected function validateRateThrottlingNotActive(int $status, string $body) : void {
         if ($status === HttpStatus::TOO_MANY_REQUESTS) {
+            $json = json_decode($body);
+
             throw RateThrottled::fromRequestThrottled(
-                $this->mapper->map(BlizzardError::class, Source::json($body))
+                new BlizzardError($json->code, $json->type, $json->detail)
             );
         }
     }
 
-    final protected function validateIsSuccessfulResponse(int $status, string $body, Closure $exceptionFactory) : void {
+    final protected function validateIsSuccessfulResponse(int $status, string $body, FetchErrorHandler $fetchErrorHandler) : ?object {
         if ($status !== HttpStatus::OK) {
-            $blizzardError = $this->mapper->map(BlizzardError::class, Source::json($body));
-            throw $exceptionFactory($blizzardError);
+            return $fetchErrorHandler->handle($status, $body);
         }
+
+        return null;
     }
 
     final protected function getRegion(RegionAndLocale $regionAndLocale = null) : Region {
@@ -114,10 +119,14 @@ abstract class AbstractBlizzardApi {
     }
 
     final protected function apiUriForRegion(Region $region) : UriInterface {
-        return Http::createFromString(sprintf(
+        return Http::new(sprintf(
             'https://%s.api.blizzard.com',
             $region->getApiNamespace()
         ));
+    }
+
+    final protected function simpleMapper() : TreeMapper {
+        return (new MapperBuilder())->allowSuperfluousKeys()->mapper();
     }
 
 }
